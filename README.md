@@ -1,7 +1,7 @@
 # cs50-web-programming-py-js
 My projects for HarvardX: CS50's Web Programming with Python and JavaScript
 
-# Project 0: search
+## Project 0: search
 Consists of mimicking Google Search interface and functionality with HTML and CSS, adjusting parameters sent with the GET query in order to success in Google base Search, Image Search and Advanced Search. All of the views are responsive.
 
 <details close>
