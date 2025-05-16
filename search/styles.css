@@ -1,0 +1,209 @@
+:root {
+    --background-color: white;
+    --border-color: #ced4da;
+    --border-color-action: #007bff;
+    --border-shadow-color: #e7f1fc;
+
+    --button-color: rgb(243, 243, 243);
+    --button-font-size: 14px;
+
+    --font-family: Arial, sans-serif;
+    --font-size: 16px;
+    --font-color: rgb(74, 73, 73);
+
+    --as-sides-px: 35px;
+
+}
+
+
+
+.navbar {
+    padding: 20px;
+    background-color: var(--background-color);
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    font-size: var(--font-size);
+    font-family: var(--font-family);
+
+
+}
+
+
+.navbar a {
+    text-decoration: none;
+    color: var(--font-color);
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+    color: var(--border-color-action);
+}
+
+
+.search_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0px;
+
+}
+
+
+#logo {
+    margin: 200px auto 30px;
+    height: 100px;
+}
+
+#form_search {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+
+/* Search bar */
+.text_input {
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    margin: auto;
+    height: 40px;
+    width: 100%;
+    min-width: 200px;
+    max-width: 600px;
+    padding: 5px 20px;
+    font-size: var(--font-size);
+    font-family: var(--font-family);
+    box-shadow: 0 2px 0 0.1rem var(--border-shadow-color);
+}
+
+.text_input:focus {
+    outline: none;
+    border-color: var(--border-color-action);
+}
+
+/* Search button */
+.button_row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+
+.submit_button {
+    display: flex;
+    height: 40px;
+    width: 150px;
+    padding: 15px;
+    margin: 30px auto;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--button-color);
+    border: 1px solid var(--border-color);
+
+    font-family: var(--font-family);
+    font-size: var(--button-font-size);
+    color: var(--font-color);
+}
+
+.submit_button:hover {
+    cursor: pointer;
+    box-shadow: 0 1px 0 0.1rem var(--border-shadow-color);
+}
+
+
+
+
+
+#advanced_search_title {
+    color: rgb(232, 31, 31);
+    font-family: var(--font-family);
+    font-size: 20px;
+    font-weight: lighter;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 0 30px var(--as-sides-px);
+}
+
+
+#advanced_search_form {
+    max-width: 762px;
+    min-width: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: left;
+    gap: 14px;
+
+    margin: 30px var(--as-sides-px);
+}
+
+#advanced_search_subtitle {
+    font-family: var(--font-family);
+    font-size: 16px;
+    font-weight: lighter;
+    margin-bottom: 5px;
+}
+
+
+.advanced_search_row {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+    gap: 10px;
+
+}
+
+.advanced_search_row label {
+    width: 180px;
+
+    font-family: var(--font-family);
+    font-size: 13px;
+    font-weight: lighter;
+}
+
+.advanced_search_row input {
+    width: 550px;
+    height: 25px;
+
+    border: 1px solid var(--border-color);
+    padding: 2px 10px;
+
+    font-family: var(--font-family);
+    font-size: 13px;
+    font-weight: lighter;
+    box-sizing: content-box;
+}
+
+.advanced_search_row input:focus {
+    outline: none;
+    border-color: var(--border-color-action);
+    box-shadow: 0 1px 0 0.1rem var(--border-shadow-color);
+
+}
+
+#as_submit_button {
+    display: flex;
+    height: 33px;
+    width: 15%;
+    min-width: 150px;
+    max-width: 150px;
+    margin-left: auto;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--border-color-action);
+    border: 1px solid var(--border-color);
+
+    font-family: var(--font-family);
+    font-size: var(--button-font-size);
+    color: white;
+}
+
+#as_submit_button:hover {
+    box-shadow: 0 1px 0 0.1rem var(--border-shadow-color);
+    background-image: linear-gradient(rgba(148, 148, 148, 0.4) 0 0);
+}
