@@ -4,7 +4,7 @@ My projects for HarvardX: CS50's Web Programming with Python and JavaScript
 ## Project 0: search
 Consists of mimicking Google Search interface and functionality with HTML and CSS, adjusting parameters sent with the GET query in order to success in Google base Search, Image Search and Advanced Search. All of the views are responsive. 
 
-Demonstration: https://www.youtube.com/watch?v=qFfkPBhsuJA
+Demonstration: [https://www.youtube.com/watch?v=qFfkPBhsuJA](https://youtu.be/qFfkPBhsuJA)
 
 <details close>
 <summary>See screenshots</summary>
@@ -23,7 +23,7 @@ Demonstration: https://www.youtube.com/watch?v=qFfkPBhsuJA
 ## Project 1: wiki
 Consists of coding a web encyclopedia with Django where users can read entries, create new ones and edit them. The content is added by the user using Markdown, so that it renders automatically to HTML and CSS. Also there's a completely functional search bar and a random entry button.
 
-Demonstration: https://youtu.be/qFfkPBhsuJA
+Demonstration: [https://youtu.be/qFfkPBhsuJA](https://youtu.be/3EncKBV1mC8)
 
 <details close>
 <summary>See screenshots</summary>
