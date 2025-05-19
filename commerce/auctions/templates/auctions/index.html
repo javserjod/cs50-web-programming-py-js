@@ -1,7 +1,25 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
+<h2>Active Listings</h2>
 
-    TODO
+<div class="d-flex flex-wrap mt-3">
+
+    {% for listing in listings %}
+    <div class="card mr-2" style="width: 18rem;">
+
+        <img src="{{ listing.image_url }}" class="card-img-top" alt="{{ listing.title }}">
+        <div class="card-body">
+            <h5 class="card-title">{{ listing.title }}</h5>
+            <p class="card-text">{{ listing.description }}</p>
+        </div>
+    </div>
+
+    {% empty %}
+    <div class="alert alert-info" role="alert">
+        No active listings available.
+    </div>
+
+    {% endfor %}
+</div>
 {% endblock %}
