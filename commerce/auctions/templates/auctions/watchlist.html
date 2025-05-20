@@ -1,11 +1,11 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-<h2>Active Listings</h2>
+<h2>{{ request.user }}'s watchlist</h2>
 
 <div class="d-flex flex-wrap mt-3">
 
-    {% for listing in listings %}
+    {% for listing in watchlisted_listings %}
     <a href="{% url 'listing' listing.id %}" class="m-2" style="text-decoration: none; color: inherit;">
         <div class="card h-100" style="width: 18rem; height: 500px;">
             {% if listing.image_url %}
@@ -27,9 +27,11 @@
 
     {% empty %}
     <div class="alert alert-info" role="alert">
-        No active listings available.
+        Watchlist is empty.
     </div>
 
     {% endfor %}
+
 </div>
+
 {% endblock %}

@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 
 from .models import User, AuctionListing
 
@@ -13,6 +14,12 @@ def index(request):
     return render(request, "auctions/index.html", {
         "listings": listings
     })
+
+
+def listing(request, listing_id):
+    if request.method == "GET":
+        listing = AuctionListing.objects.get(pk=listing_id)
+        return render(request, "auctions/listing.html", {"listing": listing})
 
 
 def login_view(request):
@@ -72,16 +79,37 @@ def create_listing(request):
     if request.method == "GET":
         return render(request, "auctions/create_listing.html")
     else:
-        title = request.POST["title"]
-        description = request.POST["description"]
-        starting_bid = request.POST["starting_bid"]
-        image_url = request.POST["image_url"]
-
         listing = AuctionListing(
-            title=title,
-            description=description,
-            starting_bid=starting_bid,
-            image_url=image_url
+            title=request.POST["title"],
+            description=request.POST["description"],
+            image_url=request.POST["image_url"],
+            created_by=request.user,
+            starting_bid=request.POST["starting_bid"],
         )
         listing.save()
         return HttpResponseRedirect(reverse("index"))
+
+
+@login_required
+# Show watchlist. Manage watchlist items.
+def watchlist(request):
+    if request.method == "GET":
+        watchlisted_listings = request.user.watchlist.all()
+        return render(request, "auctions/watchlist.html", {
+            "watchlisted_listings": watchlisted_listings
+        })
+    else:
+        if request.POST["action"] == "add":
+            new_watchlisted_listing = AuctionListing.objects.get(
+                pk=request.POST["listing_id"])
+            request.user.watchlist.add(new_watchlisted_listing)
+        else:   # action: remove from watchlist
+            listing = AuctionListing.objects.get(pk=request.POST["listing_id"])
+            request.user.watchlist.remove(listing)
+
+        return HttpResponseRedirect(reverse("listing", args=[request.POST["listing_id"]]))
+
+
+@login_required
+def bid(request):
+    pass

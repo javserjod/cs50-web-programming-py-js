@@ -1,0 +1,42 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<h2>{{ listing.title }}</h2>
+
+<div class="d-flex flex-wrap mt-3">
+    <ul>
+        <li>
+            Listing created by: {{ listing.created_by }}
+        </li>
+        <li>
+            Description: {{ listing.description }}
+        </li>
+        <li>
+            Starting bid: {{ listing.starting_bid }}
+        </li>
+
+    </ul>
+
+</div>
+
+
+{% if user.is_authenticated %}
+    {% if user not in listing.watchlisted_by.all %}
+
+        <form method="POST" action="{% url 'watchlist'%}">
+            {% csrf_token %}
+            <input type="hidden" name="listing_id" value="{{ listing.id }}">
+            <button class="btn btn-primary" type="submit" name="action" value="add">Add to watchlist</button>
+        </form>
+    {% else %}
+        <form method="POST" action="{% url 'watchlist'%}">
+            {% csrf_token %}
+            <input type="hidden" name="listing_id" value="{{ listing.id }}">
+            <button class="btn btn-danger" type="submit" name="action" value="remove">Remove from watchlist</button>
+        </form>
+    {% endif %}
+
+{% else %}
+
+{% endif %}
+{% endblock %}
