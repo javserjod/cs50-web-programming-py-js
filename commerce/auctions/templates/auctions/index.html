@@ -1,7 +1,7 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-<h2>Active Listings</h2>
+<h2>All Active Listings</h2>
 
 <div class="d-flex flex-wrap mt-3">
 
@@ -9,9 +9,9 @@
     <a href="{% url 'listing' listing.id %}" class="m-2" style="text-decoration: none; color: inherit;">
         <div class="card h-100" style="width: 18rem; height: 500px;">
             {% if listing.image_url %}
-            <img src="{{ listing.image_url }}" class="card-img-top" alt="{{ listing.title }}">
+            <img src="{{ listing.image_url }}" class="card-img-top img-fluid" style="width: 100%; aspect-ratio: 1/1; object-fit: fill;" alt="{{ listing.title }}">
             {% else %}
-            <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" class="card-img-top"
+            <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" class="card-img-top" style="width: 100%; aspect-ratio: 1/1; object-fit: fill;"
                 alt="No image available">
             {% endif %}
             <div class="card-body">
@@ -20,7 +20,7 @@
 
             </div>
             <div class="card-footer">
-                <h5 class="card-text">Current price: $</h5>
+                <h5 class="card-text">Bid from: {{ listing.highest_bid}} $</h5>
             </div>
         </div>
     </a>

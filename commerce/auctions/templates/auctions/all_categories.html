@@ -1,0 +1,22 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<h2>Available Active Categories</h2>
+
+<div class="d-flex flex-wrap mt-3">
+    {% for category_dict in categories %}
+    <div class="d-flex flex-column col-md-12 mt-2">
+        <div class="card h-100" style="width: 18rem; height: 500px;">
+            <a href="{% url 'category_listings' category_dict.category|lower %}" class="m-2 d-bloc" style="text-decoration: none; color: inherit;">
+                <strong>{{ category_dict.category }}</strong> ({{ category_dict.total }} listings)
+            </a>
+        </div>
+    </div>
+    
+    {% empty %}
+        <div class="alert alert-info" role="alert">
+            No categories right now.
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

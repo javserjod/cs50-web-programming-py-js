@@ -16,7 +16,7 @@
     </div>
 
     <div class="form-group">
-        <label for="starting_bid">Starting bid:</label>
+        <label for="starting_bid">Starting bid (€):</label>
         <input type="number" class="form-control" id="starting_bid" name="starting_bid" min="0" required>
     </div>
 
@@ -25,6 +25,11 @@
         <input type="url" class="form-control" id="image_url" name="image_url">
     </div>
 
-    <input class="btn btn-primary" type="submit" value="Create Listing">
+    <div class="form-group">
+        <label for="category">Category:</label>
+        <input type="text" class="form-control" id="category" name="category">
+    </div>
+
+    <input class="btn btn-primary" type="submit" value="Create listing">
 
     {% endblock %}
