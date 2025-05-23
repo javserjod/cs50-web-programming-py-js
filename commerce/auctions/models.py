@@ -23,7 +23,7 @@ class AuctionListing(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.title} - {self.starting_bid} - by {self.created_by}"
+        return f"{self.title} - by {self.created_by}"
 
     def highest_bid(self):
         highest = self.bids.order_by('-amount').first()
