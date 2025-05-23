@@ -42,5 +42,26 @@ Demonstration: [https://youtu.be/qFfkPBhsuJA](https://youtu.be/3EncKBV1mC8)
 
 </details>
 
+## Project 2: commerce
+Consists of creating an auction site like eBay where users can post their own listings and decide when to close them, place bids on ther user's listings, comment on them, add to watchlist, filter items by category, etc.
+
+Demonstration: https://youtu.be/Tl3NBic1LvM
+
+<details close>
+<summary>See screenshots</summary>
+<br>
+  
+![Captura de pantalla 2025-05-23 162142](https://github.com/user-attachments/assets/bb527583-6092-4544-bb1b-f1da91f6e218)
+
+![Captura de pantalla 2025-05-23 162147](https://github.com/user-attachments/assets/704cc190-8f1f-4c43-8cc7-8f054aa395cc)
+
+![Captura de pantalla 2025-05-23 162158](https://github.com/user-attachments/assets/9e8c8f58-3064-420f-8293-144cba9464d5)
+
+![Captura de pantalla 2025-05-23 162223](https://github.com/user-attachments/assets/124aa6e8-99b7-4dde-9b80-ad1fcf35c6d8)
+
+![Captura de pantalla 2025-05-23 162252](https://github.com/user-attachments/assets/b8212231-f5dd-4e6a-92ab-d7d1f8681c71)
+
+</details>
+
 
 
