@@ -194,7 +194,7 @@ def comment(request):
 def all_categories(request):
     if request.method == "GET":
         categories = (
-            AuctionListing.objects
+            AuctionListing.objects.filter(is_active=True)
             .values('category')
             .annotate(total=Count('id'))
             .order_by('category')

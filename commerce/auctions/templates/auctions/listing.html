@@ -112,13 +112,23 @@
 
     {% if not listing.is_active and user != listing.current_bid_user %}
     <div class="col-md-12 mb-2">
-        <div class="alert alert-danger" style="display: inline-block;" role="alert">
-            {% if listing.highest_bid > listing.starting_bid %}
-                <h5 class="card-text">Another user has won the auction for {{ listing.title }} with a bid of {{ listing.highest_bid }} €</h5>
+        
+        {% if listing.highest_bid > listing.starting_bid %}
+            {% if user != listing.created_by %}
+                <div class="alert alert-danger" style="display: inline-block;" role="alert">
+                    <h5 class="card-text">Another user has won the auction for {{ listing.title }} with a bid of {{ listing.highest_bid }} €</h5>
+                </div>
             {% else %}
-                <h5 class="card-text">No bids were placed for {{ listing.title }}. The auction has ended.</h5>
+                <div class="alert alert-info" style="display: inline-block;" role="alert">
+                    <h5 class="card-text"> You have closed the auction for {{ listing.title }} with a bid of {{ listing.highest_bid }} €</h5>
+                </div>
             {% endif %}
-        </div>
+        {% else %}
+            <div class="alert alert-info" style="display: inline-block;" role="alert">
+                <h5 class="card-text">No bids were placed for {{ listing.title }}. The auction has ended.</h5>
+            </div>
+        {% endif %}
+
     </div>
     {% endif %}
 
