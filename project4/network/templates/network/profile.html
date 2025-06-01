@@ -7,37 +7,39 @@
         <h1>{{ profile_user.username}}'s profile</h1>
     {% endif %}
     
-    <div class="d-flex justify-content-between align-items-center">
-        <div class="container mt-4 mb-3 mx-auto p- text-center">
-            <img src= "{{ profile_user.image_url }}" alt="Not Available Picture" class="rounded-circle" style="width: 150px; height: 150px;">
-        
-            {% if user.is_authenticated and user != profile_user %}
-                <div class="container mt-1 mx-auto p-3 text- text-center">
-                    {% if is_followed %}
-                        <form method="POST" action="{% url 'unfollow' profile_user.username %}">
-                            {% csrf_token %}
-                            <button class="btn btn-danger">Unfollow</button>
-                        </form>
-                    {% else %}
-                        <form method="POST" action="{% url 'follow' profile_user.username %}">
-                            {% csrf_token %}
-                            <button class="btn btn-primary">Follow</button>
-                        </form>
-                    {% endif %}
-                </div>
-            {% endif %}
-        </div>
-        <div class="container mt-4 mx-auto p-4 text- text-center">
-            <h1>{{profile_user.posts_count}}</h1>
-            <h4>Posts</h4>
-        </div>
-        <div class="container mt-4 mx-auto p-4 text- text-center">
-            <h1>{{profile_user.followers_count}}</h1>
-            <h4>Followers</h4>
-        </div>
-        <div class="container mt-4 mx-auto p-4 text- text-center">
-            <h1>{{profile_user.following_count}}</h1>
-            <h4>Following</h4>
+    <div class="d-flex align-items-center justify-content-center my-4">
+        <div class="row text-center align-items-center gy-3 border rounded">
+            <div class="col-12 col-md-3 p-3">
+                <img src= "{{ profile_user.image_url }}" alt="Not Available Picture" class="rounded-circle img-fluid w-100" style="max-width: 400px">
+            
+                {% if user.is_authenticated and user != profile_user %}
+                    <div class="container mt-1 mx-auto p-3 text- text-center">
+                        {% if is_followed %}
+                            <form method="POST" action="{% url 'unfollow' profile_user.username %}">
+                                {% csrf_token %}
+                                <button class="btn btn-danger">Unfollow</button>
+                            </form>
+                        {% else %}
+                            <form method="POST" action="{% url 'follow' profile_user.username %}">
+                                {% csrf_token %}
+                                <button class="btn btn-primary">Follow</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-4 col-md-3">
+                <h1>{{profile_user.posts_count}}</h1>
+                <h4>Posts</h4>
+            </div>
+            <div class="col-4 col-md-3">
+                <h1>{{profile_user.followers_count}}</h1>
+                <h4>Followers</h4>
+            </div>
+            <div class="col-4 col-md-3">
+                <h1>{{profile_user.following_count}}</h1>
+                <h4>Following</h4>
+            </div>
         </div>
     </div>
     
