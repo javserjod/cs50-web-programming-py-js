@@ -1,0 +1,68 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    {% if user == profile_user %}
+        <h1>Your profile</h1>
+    {% else %}
+        <h1>{{ profile_user.username}}'s profile</h1>
+    {% endif %}
+    
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="container mt-4 mb-3 mx-auto p- text-center">
+            <img src= "{{ profile_user.image_url }}" alt="Not Available Picture" class="rounded-circle" style="width: 150px; height: 150px;">
+        
+            {% if user.is_authenticated and user != profile_user %}
+                <div class="container mt-1 mx-auto p-3 text- text-center">
+                    {% if is_followed %}
+                        <form method="POST" action="{% url 'unfollow' profile_user.username %}">
+                            {% csrf_token %}
+                            <button class="btn btn-danger">Unfollow</button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{% url 'follow' profile_user.username %}">
+                            {% csrf_token %}
+                            <button class="btn btn-primary">Follow</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="container mt-4 mx-auto p-4 text- text-center">
+            <h1>{{profile_user.posts_count}}</h1>
+            <h4>Posts</h4>
+        </div>
+        <div class="container mt-4 mx-auto p-4 text- text-center">
+            <h1>{{profile_user.followers_count}}</h1>
+            <h4>Followers</h4>
+        </div>
+        <div class="container mt-4 mx-auto p-4 text- text-center">
+            <h1>{{profile_user.following_count}}</h1>
+            <h4>Following</h4>
+        </div>
+    </div>
+    
+    <hr class="mt-1 mb-5">
+    
+    
+    {% if not profile_user_posts %}
+        <h3 class="text-center">No posts available</h3>
+    {% else %}
+        {% if user == profile_user %}
+            <h3 class="text-center">Your Posts</h3>
+        {% else %}
+            <h3 class="text-center">Posts by {{ profile_user.username }}</h3>
+        {% endif %}
+        {% for post in profile_user_posts %}
+            <div class="container mt-2 mx-auto p-4 border rounded text-">
+                <h5>{{ post.author.username }}</h5>
+                <p>{{ post.content }}</p>
+                <p class="text-muted">{{ post.formatted_date}}</p>
+                <button>❤️ {{ post.like_count }}</button>
+                <button>Comment</button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    
+
+{% endblock %}
