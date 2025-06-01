@@ -4,7 +4,7 @@ My projects for HarvardX: CS50's Web Programming with Python and JavaScript
 ## Project 0: search
 Consists of mimicking Google Search interface and functionality with HTML and CSS, adjusting parameters sent with the GET query in order to success in Google base Search, Image Search and Advanced Search. All of the views are responsive. 
 
-Demonstration: [https://www.youtube.com/watch?v=qFfkPBhsuJA](https://youtu.be/qFfkPBhsuJA)
+Demonstration: https://youtu.be/qFfkPBhsuJA
 
 <details close>
 <summary>See screenshots</summary>
@@ -23,7 +23,7 @@ Demonstration: [https://www.youtube.com/watch?v=qFfkPBhsuJA](https://youtu.be/qF
 ## Project 1: wiki
 Consists of coding a web encyclopedia with Django where users can read entries, create new ones and edit them. The content is added by the user using Markdown, so that it renders automatically to HTML and CSS. Also there's a completely functional search bar and a random entry button.
 
-Demonstration: [https://youtu.be/qFfkPBhsuJA](https://youtu.be/3EncKBV1mC8)
+Demonstration: https://youtu.be/3EncKBV1mC8
 
 <details close>
 <summary>See screenshots</summary>
@@ -65,3 +65,26 @@ Demonstration: https://youtu.be/Tl3NBic1LvM
 
 
 
+
+
+## Project 3: mail
+Consists of adding the logic with JavaScript in order to perform the API operations with the views.py file and show relevant information to the user.
+Implemented the ability to write emails, filter in different mailboxes, make replies and archive/unarchive emails. Operations GET, POST and PUT are utilized according to the API documentation of the web app.
+
+Demonstration: https://youtu.be/mwzJ9wdsheg
+
+<details close>
+<summary>See screenshots</summary>
+<br>
+
+![Captura de pantalla 2025-05-27 203924](https://github.com/user-attachments/assets/e1e01d22-1d79-4564-b219-479dfd54ffab)
+
+![Captura de pantalla 2025-05-27 203927](https://github.com/user-attachments/assets/afd7f59d-fe9d-4698-a80e-f617a808375f)
+
+![Captura de pantalla 2025-05-27 203949](https://github.com/user-attachments/assets/2773c9e9-e2ff-4f83-aaba-04af0ac58d5d)
+
+![Captura de pantalla 2025-05-27 204420](https://github.com/user-attachments/assets/f08dee42-05ec-4429-8db1-126b57cb73b4)
+
+![Captura de pantalla 2025-05-27 203939](https://github.com/user-attachments/assets/35ad89aa-27f3-4396-ba00-966fde486dea)
+
+</details>
