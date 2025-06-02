@@ -1,9 +1,9 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    <h1>All Posts</h1>
+    <h1 class="mb-4">All Posts</h1>
     {% if user.is_authenticated %}
-        <div class="container mt-4 mx-auto p-4 border rounded text-">
+        <div class="container mx-auto p-4 border rounded text-">
             <form method="POST" action="{% url 'index' %}" class="d-flex flex-column align-items-start">
                 {% csrf_token %}
                 <h3 class="mb-3">New Post</h3>
@@ -13,14 +13,15 @@
         </div>
     {% endif %}
 
-    {% for post in posts %}
-        <div class="container mt-2 mx-auto p-4 border rounded text-">
-            <a href="{% url 'profile' post.author.username %}"><h5>{{ post.author.username }}</h5></a>
-            <p>{{ post.content }}</p>
-            <p class="text-muted">{{ post.formatted_date}}</p>
-            <button>❤️ {{ post.like_count }}</button>
-            <button>Comment</button>
-        </div>
-    {% endfor %}
+    {% if not page_obj %}
+        <h3 class="text-center">No posts available</h3>
+    {% else %}
+        {% for post in page_obj %}
+            {% include "network/components/posts.html" %}
+        {% endfor %}
+
+        {% include "network/components/posts_pagination.html" %}
+        
+    {% endif %}
 
 {% endblock %}

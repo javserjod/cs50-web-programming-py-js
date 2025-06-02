@@ -4,8 +4,11 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 
 from .models import User, Post, Comment
+
+POSTS_PER_PAGE = 10
 
 
 def index(request):
@@ -17,8 +20,13 @@ def index(request):
         return HttpResponseRedirect(reverse("index"))
 
     else:
+        all_posts = Post.objects.all().order_by("-date")
+        paginator = Paginator(all_posts, POSTS_PER_PAGE)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
         return render(request, "network/index.html", {
-            "posts": Post.objects.all().order_by("-date"),
+            'page_obj': page_obj
         })
 
 
@@ -79,12 +87,17 @@ def profile(request, username):
         pass
     else:
         profile_user = get_object_or_404(User, username=username)
-        profile_user_posts = Post.objects.filter(
+
+        all_profile_user_posts = Post.objects.filter(
             author=profile_user).order_by("-date")
+        paginator = Paginator(all_profile_user_posts, POSTS_PER_PAGE)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
         is_followed = profile_user.is_followed_by(request.user)
         return render(request, "network/profile.html", {
             "profile_user": profile_user,
-            "profile_user_posts": profile_user_posts,
+            "page_obj": page_obj,
             "is_followed": is_followed,
         })
 
@@ -104,3 +117,21 @@ def unfollow(request, username_to_unfollow):
             User, username=username_to_unfollow)
         request.user.following.remove(user_to_unfollow)
         return HttpResponseRedirect(reverse("profile", args=[username_to_unfollow]))
+
+
+@login_required
+def following(request):
+    if request.method == "POST":
+        pass
+    else:
+        following_users = request.user.following.all()
+        all_following_posts = Post.objects.filter(
+            author__in=following_users).order_by("-date")
+
+        paginator = Paginator(all_following_posts, POSTS_PER_PAGE)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
+        return render(request, "network/following.html", {
+            "page_obj": page_obj,
+        })

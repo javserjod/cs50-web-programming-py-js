@@ -1,0 +1,19 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <h1 class="mb-4">Following Users' Posts</h1>
+
+    {% if not page_obj %}
+        <h3 class="text-center">No posts available</h3>
+    {% else %}
+        {% for post in page_obj %}
+            {% include "network/components/posts.html" %}
+        {% endfor %}
+
+        {% include "network/components/posts_pagination.html" %}
+
+    {% endif %}
+
+    
+
+{% endblock %}
