@@ -5,6 +5,8 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+import json
+from django.http import JsonResponse
 
 from .models import User, Post, Comment
 
@@ -135,3 +137,21 @@ def following(request):
         return render(request, "network/following.html", {
             "page_obj": page_obj,
         })
+
+
+@login_required
+def edit_post(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            post = get_object_or_404(Post, pk=data.get("post_id"))
+            post.content = data.get("content")
+            post.save()
+            return HttpResponse(status=204)
+        except:
+            return HttpResponse(status=400)
+
+
+@login_required
+def delete_post(request):
+    pass
