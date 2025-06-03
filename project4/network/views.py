@@ -164,3 +164,30 @@ def delete_post(request):
             return HttpResponse(status=204)
         except:
             return HttpResponse(status=400)
+
+
+@login_required
+def like_post(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            post = get_object_or_404(Post, pk=data.get("post_id"))
+            post.liked_by.add(request.user)
+            post.save()
+            return HttpResponse(status=204)
+        except:
+            return HttpResponse(status=400)
+
+
+@login_required
+def unlike_post(request):
+    pass
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            post = get_object_or_404(Post, pk=data.get("post_id"))
+            post.liked_by.remove(request.user)
+            post.save()
+            return HttpResponse(status=204)
+        except:
+            return HttpResponse(status=400)

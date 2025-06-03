@@ -1,4 +1,5 @@
 <div class="post container mt-2 mx-auto p-4 border rounded text-" data-post-id="{{ post.id }}">
+    
     <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="{% url 'profile' post.author.username %}"><h5>{{ post.author.username }}</h5></a>
         {% if user == post.author %}
@@ -8,12 +9,22 @@
         </div>
         {% endif %}
     </div>
+
     <div class="content">
         <p>{{ post.content }}</p>
     </div>
+
     <p class="text-muted">{{ post.formatted_date}}</p>
-    <button>❤️ {{ post.like_count }}</button>
-    <button>Comment</button>
+    
+    <div class="d-flex">
+        <div class="button-div mr-1">
+            {% if user in post.liked_by.all %}
+                <button class="like-button btn btn-danger border liked" data-post-like-count="{{ post.like_count }}"><i class="bi bi-suit-heart-fill"></i> {{ post.like_count }}</button>
+            {% else %}
+                <button class="like-button btn btn-secondary border" data-post-like-count="{{ post.like_count }}"><i class="bi bi-suit-heart"></i> {{ post.like_count }}</button>
+            {% endif %}
+        </div>
+        <button class="btn btn-primary">Comment</button>
+    </div>
     
 </div>
-
