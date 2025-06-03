@@ -4,8 +4,8 @@
         <a href="{% url 'profile' post.author.username %}"><h5>{{ post.author.username }}</h5></a>
         {% if user == post.author %}
         <div>
-            <button class="edit btn btn-primary">Edit</button>
-            <button class="delete btn btn-danger">Delete</button>
+            <button class="edit btn btn-primary"><i class="bi bi-pencil-square"></i></button>
+            <button class="delete btn btn-warning"><i class="bi bi-x-circle"></i></button>
         </div>
         {% endif %}
     </div>

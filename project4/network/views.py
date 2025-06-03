@@ -63,7 +63,9 @@ def register(request):
     if request.method == "POST":
         username = request.POST["username"]
         email = request.POST["email"]
-
+        image_url = request.POST["image_url"]
+        if not image_url:
+            image_url = "https://t4.ftcdn.net/jpg/02/15/84/43/360_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg"
         # Ensure password matches confirmation
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
@@ -74,7 +76,8 @@ def register(request):
 
         # Attempt to create new user
         try:
-            user = User.objects.create_user(username, email, password)
+            user = User.objects.create_user(
+                username, email, password, image_url=image_url)
             user.save()
         except IntegrityError:
             return render(request, "network/register.html", {

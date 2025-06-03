@@ -6,8 +6,7 @@ class User(AbstractUser):
     followers = models.ManyToManyField(
         'self', symmetrical=False, related_name='following', blank=True)
 
-    image_url = models.URLField(
-        default="https://t4.ftcdn.net/jpg/02/15/84/43/360_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg", blank=True)
+    image_url = models.URLField(blank=True)
 
     def __str__(self):
         return f"{self.username}"
