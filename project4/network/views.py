@@ -15,6 +15,7 @@ POSTS_PER_PAGE = 10
 
 def index(request):
     if request.method == "POST" and request.user.is_authenticated:
+        # Create post
         author = request.user
         content = request.POST["content"]
         post = Post.objects.create(author=author, content=content)
@@ -22,6 +23,7 @@ def index(request):
         return HttpResponseRedirect(reverse("index"))
 
     else:
+        # Display all posts
         all_posts = Post.objects.all().order_by("-date")
         paginator = Paginator(all_posts, POSTS_PER_PAGE)
         page_number = request.GET.get("page")
@@ -154,4 +156,11 @@ def edit_post(request):
 
 @login_required
 def delete_post(request):
-    pass
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            post = get_object_or_404(Post, pk=data.get("post_id"))
+            post.delete()
+            return HttpResponse(status=204)
+        except:
+            return HttpResponse(status=400)

@@ -1,6 +1,6 @@
 <div class="post container mt-2 mx-auto p-4 border rounded text-" data-post-id="{{ post.id }}">
-    <div class="d-flex justify-content-between">
-        <a href="{% url 'profile' post.author.username %}" class="mb-3"><h5>{{ post.author.username }}</h5></a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="{% url 'profile' post.author.username %}"><h5>{{ post.author.username }}</h5></a>
         {% if user == post.author %}
         <div>
             <button class="edit btn btn-primary">Edit</button>
