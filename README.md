@@ -88,3 +88,29 @@ Demonstration: https://youtu.be/mwzJ9wdsheg
 ![Captura de pantalla 2025-05-27 203939](https://github.com/user-attachments/assets/35ad89aa-27f3-4396-ba00-966fde486dea)
 
 </details>
+
+
+
+
+
+## Project 4: network
+Consists of building a functional social network where users can: create/delete/edit posts, visit users' profiles, follow/unfollow other users, like/unlike posts and filter posts by following users. Included stylized pagination.
+The like and edit implementations are based on JavaScript, so no page reload is needed, just UI modification while a fetch with POST is sent to the backend.
+
+Demonstration: https://youtu.be/_Mc3rbbnGbI
+
+<details close>
+<summary>See screenshots</summary>
+<br>
+
+![Captura de pantalla 2025-06-03 224616](https://github.com/user-attachments/assets/bf60b4bc-23dc-4a90-b717-1e330bfd5d20)
+
+![Captura de pantalla 2025-06-03 224624](https://github.com/user-attachments/assets/c67d49d3-bee6-419b-8e98-129b5f9f4e2e)
+
+![Captura de pantalla 2025-06-03 224634](https://github.com/user-attachments/assets/78671111-bbde-4b09-90d1-8682a788bb19)
+
+![Captura de pantalla 2025-06-03 224641](https://github.com/user-attachments/assets/1b503d03-9974-4248-a3d1-a84cc427afd9)
+
+![Captura de pantalla 2025-06-03 224647](https://github.com/user-attachments/assets/b569d689-b6e9-4d17-9ac2-2814d1a5b2f3)
+
+</details>
