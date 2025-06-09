@@ -27,7 +27,7 @@
         <!-- CSRF token to access from JS to call fetch -->
         <meta name="csrf-token" content="{{ csrf_token }}">
     </head>
-    <body>
+    <body class="d-flex flex-column min-vh-100">
         
         <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm" >
             <div class="container d-flex align-items-end justify-content-between">
@@ -68,8 +68,21 @@
         </nav>
 
 
-        <div class="body mx-3">
-            {% block body %}
-            {% endblock %}
-        </div>
+        <main class="flex-fill">
+            <div class="body mx-3">
+                {% block body %}
+                {% endblock %}
+            </div>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="bg-light text-center text-muted py-3 mt-auto">
+            <small>
+                This game features embedded content from
+                <strong><a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer">YouTube</a></strong>
+                for educational and entertainment purposes only.
+                All video rights and trademarks belong to their respective owners.
+            </small>
+        </footer>
+
     </body>

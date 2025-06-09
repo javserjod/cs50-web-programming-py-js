@@ -77,9 +77,18 @@ def profile(request, username):
 
 
 @login_required
+def game_configuration(request):
+    if request.method == "GET":
+        return render(request, "quiz/game_configuration.html")
+    elif request.method == "POST":
+        game_mode = request.POST.get("game_mode")
+        number_of_questions = request.POST.get("number_of_questions")
+        print(f"Selected game mode: {game_mode}")
+
+
+@login_required
 def music_video(request):
     if request.method == "GET":
-        return render(request, "quiz/music_video.html")
+        return render(request, "quiz/gamemodes/music_video.html")
     elif request.method == "POST":
-        # Handle any POST requests related to the music video here
-        return HttpResponseRedirect(reverse("home"))
+        pass
