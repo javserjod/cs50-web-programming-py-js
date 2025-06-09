@@ -1,0 +1,16 @@
+{% extends "quiz/layout.html" %}
+
+{% block body %}
+
+<h1 class="text-center mt-5 mb-3">Music Video Quiz</h1>
+
+<div class="d-flex flex-column container border px-5 pb-5 shadow-lg rounded" style="max-width: 1000px;" >
+    {% include "quiz/components/yt_music_video.html" with video_id="fR0tqhqM7Yg" %}
+    
+    <div class="d-flex justify-content-center mt-5" style>
+        <input type="text" class="form-control" placeholder="Enter your answer here" id="answerInput">
+        <button class="btn btn-primary ms-2" id="submitAnswer">Submit</button>
+    </div>
+</div>
+
+{% endblock %}

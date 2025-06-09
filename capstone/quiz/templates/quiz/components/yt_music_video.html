@@ -1,0 +1,34 @@
+
+<div class="video-crop-container container mt-5 p-0 border shadow-lg rounded">
+    <lite-youtube
+        videoid="{{ video_id }}"
+        videotitle="Hidden title"
+        videoStartAt="1"
+        params="controls=0&enablejsapi=1&autoplay=1"
+    ></lite-youtube>
+</div>
+
+
+<style>
+    :root{
+        --visible-height: 600px;
+        --displacement-from-top: -200px;
+        --vertical-stretch: 1000px;   /* To hide title and menu */
+    }
+
+    .video-crop-container {
+        max-width: 1000px;
+        min-width: 200px;
+        height: var(--visible-height); 
+        overflow: hidden;
+        position: relative;
+
+    }
+
+    .video-crop-container lite-youtube {
+        position: absolute;
+        top: var(--displacement-from-top);
+        height: var(--vertical-stretch);
+    }
+  
+</style>

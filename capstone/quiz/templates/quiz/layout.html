@@ -7,6 +7,8 @@
         
         <!-- Bootstrap 5 -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
         <!-- Bootstrap Icons -->
         <link rel="stylesheet" href= "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" />
@@ -14,6 +16,9 @@
         <!-- Style CSS -->
         <link href="{% static 'quiz/styles.css' %}" rel="stylesheet">
 
+        <!-- lite-youtube -->
+        <script type="module" src="https://cdn.jsdelivr.net/npm/@justinribeiro/lite-youtube@1/lite-youtube.min.js"></script>
+        
         <!-- 
         <script src="{% static 'quiz/edit_delete_post.js' %}"></script>
         <script src="{% static 'quiz/like_unlike_post.js' %}"></script>
@@ -24,30 +29,40 @@
     </head>
     <body>
         
-        <nav class="navbar navbar-expand-lg navbar-light bg-light content-center">
-            <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">Quiz Royale</a>
-          
-                <ul class="navbar-nav mr-auto d-flex justify-content-end">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm" >
+            <div class="container d-flex align-items-end justify-content-between">
+                <a class="navbar-brand" style="font-size: 26px;" href="{% url 'home' %}"><strong>Quiz Royale</strong></a>
+                
                 {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'profile' user.username %}">Profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout_view' %}">Logout</a>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login_view' %}">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">Register</a>
-                    </li>
+                    <span class="navbar-text content">Loggued in as <strong>{{ user.username }}</strong></span>
                 {% endif %}
-                </ul>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse justify-content-end text-end p-1" id="navbarMenu">
+                    <ul class="navbar-nav ms-auto">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item">
+                                <a class="nav-link d-inline-block p-1 my-2" href="{% url 'home' %}">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-inline-block p-1 my-2" href="{% url 'profile' user.username %}">Profile</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-inline-block p-1 my-2" href="{% url 'logout_view' %}">Logout</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link d-inline-block p-1 my-2" href="{% url 'login_view' %}">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-inline-block p-1 my-2" href="{% url 'register' %}">Register</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
 
         </nav>

@@ -74,3 +74,12 @@ def logout_view(request):
 def profile(request, username):
     if request.method == "GET":
         return render(request, "quiz/profile.html")
+
+
+@login_required
+def music_video(request):
+    if request.method == "GET":
+        return render(request, "quiz/music_video.html")
+    elif request.method == "POST":
+        # Handle any POST requests related to the music video here
+        return HttpResponseRedirect(reverse("home"))
