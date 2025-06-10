@@ -1,13 +1,17 @@
+<div class="video-crop-container container mt-5 p-0 border shadow-lg rounded">
+    <iframe 
+        src="https://www.youtube.com/embed/{{ video_id }}" 
+        frameborder="0"
+    ></iframe>
+</div>
 
 <div class="video-crop-container container mt-5 p-0 border shadow-lg rounded">
     <lite-youtube
-        videoid="{{ video_id }}"
+        videoid="OcGe6Hy8qOE"
         videotitle="Hidden title"
         videoStartAt="1"
-        params="controls=0&enablejsapi=1&autoplay=1"
     ></lite-youtube>
 </div>
-
 
 <style>
     :root{
@@ -21,6 +25,13 @@
         overflow: hidden;
         position: relative;
 
+    }
+
+    .video-crop-container iframe {
+        position: absolute;
+        top: var(--displacement-from-top);
+        height: var(--vertical-stretch);
+        width: 100%;
     }
 
     .video-crop-container lite-youtube {

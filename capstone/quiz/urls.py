@@ -9,6 +9,7 @@ urlpatterns = [
     path("logout", views.logout_view, name="logout_view"),
     path("profile/<str:username>", views.profile, name="profile"),
     path("game_configuration", views.game_configuration, name="game_configuration"),
+    path("game_update/<int:game_id>", views.game_update, name="game_update"),
     path("gamemode/music_video", views.music_video, name="music_video"),
 
 

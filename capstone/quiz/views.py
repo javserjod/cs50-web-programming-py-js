@@ -5,9 +5,9 @@ from django.urls import reverse
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
 
-from quiz.models import User
-
-# Create your views here.
+from quiz.models import User, Game
+import requests
+import re
 
 
 def home(request):
@@ -81,9 +81,41 @@ def game_configuration(request):
     if request.method == "GET":
         return render(request, "quiz/game_configuration.html")
     elif request.method == "POST":
+        # create a new game instance
+        user = request.user
         game_mode = request.POST.get("game_mode")
-        number_of_questions = request.POST.get("number_of_questions")
-        print(f"Selected game mode: {game_mode}")
+        number_of_questions = int(request.POST.get("number_of_questions"))
+        try:
+            game = Game.objects.create(
+                user=user,
+                game_mode=game_mode,
+                number_of_questions=number_of_questions
+            )
+            game.save()
+            return HttpResponseRedirect(reverse("game_update", args=[game.id]))
+        except IntegrityError:
+            return render(request, "quiz/game_configuration.html", {
+                "message": "Error creating game. Please try again."
+            })
+
+
+@login_required
+def game_update(request, game_id):
+    if request.method == "GET":
+        game = get_object_or_404(Game, id=game_id, user=request.user)
+        if game.game_mode == "music_video":
+            # Search for a YouTube video using the game mode
+            video_id = search_youtube("shape of you", "Ed Sheeran")
+            if video_id:
+                return render(request, "quiz/gamemodes/music_video.html", {
+                    "video_id": video_id,
+                    "game": game
+                })
+            else:
+                return render(request, "quiz/gamemodes/music_video.html", {
+                    "message": "No video found for the given song and artist.",
+                    "game": game
+                })
 
 
 @login_required
@@ -92,3 +124,20 @@ def music_video(request):
         return render(request, "quiz/gamemodes/music_video.html")
     elif request.method == "POST":
         pass
+
+
+def search_youtube(song_name, artist_name):
+    """
+    Search for a YouTube video using the song name and artist name.
+    Scrapes the YouTube search results page to find the first video that matches the query and extracts the video ID.
+    """
+    query = f"{song_name} {artist_name}".replace(" ", "+")
+    url = f"https://www.youtube.com/results?search_query={query}"
+    response = requests.get(url)
+
+    match = re.search(r'"videoId":"(.*?)"', response.text)
+    if match:
+        video_id = match.group(1)
+        return video_id
+    else:
+        return None
