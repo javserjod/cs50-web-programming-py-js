@@ -83,15 +83,17 @@ def game_configuration(request):
     elif request.method == "POST":
         # create a new game instance
         user = request.user
+        game_topic = request.POST.get("game_topic")
         game_mode = request.POST.get("game_mode")
         number_of_questions = int(request.POST.get("number_of_questions"))
         try:
             game = Game.objects.create(
                 user=user,
+                game_topic=game_topic,
                 game_mode=game_mode,
                 number_of_questions=number_of_questions
             )
-            game.save()
+            game.save()   # game created
             return HttpResponseRedirect(reverse("game_update", args=[game.id]))
         except IntegrityError:
             return render(request, "quiz/game_configuration.html", {
@@ -103,27 +105,16 @@ def game_configuration(request):
 def game_update(request, game_id):
     if request.method == "GET":
         game = get_object_or_404(Game, id=game_id, user=request.user)
-        if game.game_mode == "music_video":
-            # Search for a YouTube video using the game mode
-            video_id = search_youtube("shape of you", "Ed Sheeran")
-            if video_id:
-                return render(request, "quiz/gamemodes/music_video.html", {
-                    "video_id": video_id,
-                    "game": game
-                })
-            else:
-                return render(request, "quiz/gamemodes/music_video.html", {
-                    "message": "No video found for the given song and artist.",
-                    "game": game
-                })
+        topic = game.game_topic
 
-
-@login_required
-def music_video(request):
-    if request.method == "GET":
-        return render(request, "quiz/gamemodes/music_video.html")
-    elif request.method == "POST":
-        pass
+        if game.game_mode == "mix":
+            pass
+        elif game.game_mode == "cover_image":
+            pass
+        elif game.game_mode == "character_image":
+            pass
+        elif game.game_mode == "title":
+            pass
 
 
 def search_youtube(song_name, artist_name):
@@ -141,3 +132,25 @@ def search_youtube(song_name, artist_name):
         return video_id
     else:
         return None
+
+
+def search_dailymotion(song_name, artist_name):
+    """
+    Search for a YouTube video using the song name and artist name.
+    Scrapes the YouTube search results page to find the first video that matches the query and extracts the video ID.
+    """
+    query = f"{song_name} {artist_name}"
+    url = "https://api.dailymotion.com/videos"
+    params = {
+        "search": query,
+        "fields": "id,title",
+        "limit": 1
+    }
+
+    response = requests.get(url, params=params)
+
+    if response.status_code == 200:
+        data = response.json()
+        if data["list"]:
+            return data["list"][0]["id"]
+    return None

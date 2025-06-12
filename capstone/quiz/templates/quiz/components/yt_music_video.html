@@ -1,13 +1,20 @@
+
 <div class="video-crop-container container mt-5 p-0 border shadow-lg rounded">
     <iframe 
-        src="https://www.youtube.com/embed/{{ video_id }}" 
-        frameborder="0"
+        src="https://www.youtube.com/embed/{{ video_id }}"
+        referrerpolicy="no-referrer-when-downgrade"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
     ></iframe>
 </div>
 
 <div class="video-crop-container container mt-5 p-0 border shadow-lg rounded">
+    <iframe src='http://www.dailymotion.com/embed/video/{{ video_id }}?&autoplay=1&loop=1' id="player"></iframe>
+</div>
+
+
+<div class="video-crop-container container mt-5 p-0 border shadow-lg rounded">
     <lite-youtube
-        videoid="OcGe6Hy8qOE"
+        videoid="JGwWNGJdvx8"
         videotitle="Hidden title"
         videoStartAt="1"
     ></lite-youtube>
@@ -32,7 +39,11 @@
         top: var(--displacement-from-top);
         height: var(--vertical-stretch);
         width: 100%;
+        /*pointer-events: none;*/ /* avoid interaction with the video */
+        pointer-events: auto; /* allow interaction with the video */
+        border: none; /* remove border */
     }
+
 
     .video-crop-container lite-youtube {
         position: absolute;

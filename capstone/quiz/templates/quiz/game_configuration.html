@@ -33,19 +33,32 @@
         <form method="post" class="mt-5" action="{% url 'game_configuration' %}" >
             {% csrf_token %}
 
-            <div class="form-group">
-                <label for="number_of_questions" class="mb-2"><strong style="font-size: 20px;">Game Mode</strong></label>
-                <div id="gameModeCards" class="d-flex gap-3 justify-content-center mb-4">
-                    <div class="option-card selected" data-value="music_video">Music & Video</div>
-                    <div class="option-card" data-value="audio_based">Audio</div>
-                    <div class="option-card" data-value="text_based">Lyrics</div>
+            <div class="form-group mt-5">
+                <label for="topic"><strong style="font-size: 20px;">Topic</strong></label>
+                <div id="topicCards" class="d-flex gap-3 justify-content-center mb-4">
+                  <div class="option-card selected" data-value="ANIME">Anime</div>
+                  <div class="option-card" data-value="MANGA">Manga</div>
                 </div>
-                <input type="hidden" name="game_mode" id="game_mode_hidden" value="music_video">
+                <input type="hidden" name="game_topic" id="game_topic_hidden" value="anime">
+            </div>
+
+
+            <div class="form-group">
+                <label for="gamemode" class="mb-2"><strong style="font-size: 20px;">Game Mode</strong></label>
+                <div id="gameModeCards" class="d-flex gap-3 justify-content-center mb-4">
+                    <div class="option-card selected" data-value="mix">Mix</div>
+                    <div class="option-card" data-value="cover_image">Cover Image</div>
+                    <div class="option-card" data-value="character">Character</div>
+                    <div class="option-card" data-value="title">Title</div>
+                  </div>
+                <input type="hidden" name="game_mode" id="game_mode_hidden" value="image_based">
             </div>
             
             <div class="form-group mt-5">
                 <label for="category"><strong style="font-size: 20px;">Category</strong></label>
-
+                
+                <input type="hidden" name="game_category" id="game_category_hidden" value="random">
+            
             </div>
 
             <div class="form-group mt-5">
@@ -73,6 +86,20 @@
       hiddenInputGameMode.value = card.getAttribute('data-value');
     });
   });
+
+
+
+  const topicCards = document.querySelectorAll('#topicCards .option-card');
+  const hiddenInputGameTopic = document.getElementById('game_topic_hidden');
+
+  topicCards.forEach(card => {
+    card.addEventListener('click', () => {
+      topicCards.forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      hiddenInputGameTopic.value = card.getAttribute('data-value');
+    });
+  });
+
 </script>
 
 {% endblock %}

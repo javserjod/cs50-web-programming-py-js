@@ -16,6 +16,7 @@ class Game(models.Model):
     score = models.IntegerField(default=0)
     date_played = models.DateTimeField(auto_now_add=True)
 
+    game_topic = models.CharField(max_length=50)
     game_mode = models.CharField(max_length=50)
     number_of_questions = models.IntegerField(default=10)
 
