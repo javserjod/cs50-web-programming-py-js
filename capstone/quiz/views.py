@@ -82,16 +82,15 @@ def game_configuration(request):
         return render(request, "quiz/game_configuration.html")
     elif request.method == "POST":
         # create a new game instance
-        user = request.user
-        game_topic = request.POST.get("game_topic")
-        game_mode = request.POST.get("game_mode")
-        number_of_questions = int(request.POST.get("number_of_questions"))
+
         try:
             game = Game.objects.create(
-                user=user,
-                game_topic=game_topic,
-                game_mode=game_mode,
-                number_of_questions=number_of_questions
+                user=request.user,
+                topic=request.POST.get("game_topic"),
+                mode=request.POST.get("game_mode"),
+                genres=request.POST.getlist("game_genres"),
+                n_questions=int(
+                    request.POST.get("number_of_questions"))
             )
             game.save()   # game created
             return HttpResponseRedirect(reverse("game_update", args=[game.id]))
@@ -105,16 +104,31 @@ def game_configuration(request):
 def game_update(request, game_id):
     if request.method == "GET":
         game = get_object_or_404(Game, id=game_id, user=request.user)
-        topic = game.game_topic
+        topic = game.topic
+        genres = game.genres
 
-        if game.game_mode == "mix":
+        if game.mode == "mix":
             pass
-        elif game.game_mode == "cover_image":
+        elif game.mode == "cover_image":
             pass
-        elif game.game_mode == "character_image":
+        elif game.mode == "character_image":
             pass
-        elif game.game_mode == "title":
+        elif game.mode == "title":
             pass
+
+        rounds = []
+        for i in range(1, game.n_questions + 1):
+            rounds.append({
+                "round": i,
+                "song_name": "",
+                "artist_name": "",
+                "video_id": None
+            })
+
+        return render(request, "quiz/gamemodes/cover_image.html", {
+            "game": game,
+            "rounds": range(1, game.n_questions + 1),
+        })
 
 
 def search_youtube(song_name, artist_name):

@@ -1,6 +1,119 @@
+:root {
+    --unselected-card-border: #ddd;
+    --unselected-card-fill: #f8f9fa;
+    --selected-card-border: #007bff;
+    --selected-card-fill: #e6f0ff;
+
+    --pending: #c2c2c2;
+    --wrong: #dc3545;
+    --correct: #28a745;
+
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+}
+
+
+
 .container {
     max-width: 1000px;
     min-width: 200px;
     margin: 0 auto;
     
 }
+
+/* CONTROL CARD STYLES --------------------------------------------------*/
+.control-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    background-color: #d8d8d8;
+    border-radius: 8px;
+    padding: 5px;
+    padding-inline: 15px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.control-card:hover {
+    background-color: #c0c0c0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #b0b0b0;
+}
+
+.control-card.clicked {
+  animation: clickFlash 0.4s;
+}
+
+@keyframes clickFlash {
+  0%   { box-shadow: 0 0 0px #ffffff; }
+  50%  { box-shadow: 0 0 18px #a7a7af; }
+  100% { box-shadow: 0 0 0px #fff; }
+}
+
+
+/* OPTION CARD STYLES ---------------------------------------------------*/
+.option-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--unselected-card-border);
+    background-color: var(--unselected-card-fill);
+    border-radius: 8px;
+    padding: 15px;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.3s, background-color 0.3s;
+  }
+
+.option-card.selected {
+    background-color: var(--selected-card-fill);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-color: var(--selected-card-border);
+    animation: rotate-select 0.3s ease;
+}
+
+@keyframes rotate-select {
+  0% { transform: rotate(0deg); }
+  30% { transform: rotate(2deg); }
+  70% { transform: rotate(-2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.option-card:hover {
+    border-color: var(--selected-card-border);
+    background-color: var(--selected-card-fill);
+}
+
+
+
+
+
+
+.scoreboard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.round-box {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    border-radius: 20px;
+    color: rgb(0, 0, 0);
+    background-color: var(--pending);
+  }
+  .correct {
+    background-color: var(--correct);
+  }
+  .wrong {
+    background-color: var(--wrong);
+  }

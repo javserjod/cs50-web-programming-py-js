@@ -13,12 +13,14 @@ class User(AbstractUser):
 
 class Game(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    round = models.IntegerField(default=1)
     score = models.IntegerField(default=0)
     date_played = models.DateTimeField(auto_now_add=True)
 
-    game_topic = models.CharField(max_length=50)
-    game_mode = models.CharField(max_length=50)
-    number_of_questions = models.IntegerField(default=10)
+    topic = models.CharField(max_length=50)
+    mode = models.CharField(max_length=50)
+    genres = models.JSONField(default=list)
+    n_questions = models.IntegerField(default=10)
 
     def __str__(self):
-        return f"{self.user.username} - {self.score} - {self.date_played}"
+        return f"Game #{self.id}, from {self.user.username}"
