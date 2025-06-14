@@ -129,3 +129,25 @@
 .wrong {
   background-color: var(--wrong);
 }
+
+
+
+
+/*  USER GUESS INPUT -------------------------------------------------*/
+.suggestion-box {
+  border: 1px solid #ccc;
+  background: white;
+  max-height: 200px;
+  overflow-y: auto;
+  width: 100%;
+  z-index: 1000;
+}
+
+.suggestion-box div {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.suggestion-box div:hover {
+  background-color: #f0f0f0;
+}

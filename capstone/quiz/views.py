@@ -12,6 +12,7 @@ import re
 import numpy as np
 import cv2
 import base64
+from django.http import JsonResponse
 
 
 def home(request):
@@ -123,7 +124,7 @@ def game_update(request, game_id):
         if game.mode == "mix":
             pass
 
-        elif game.mode == "cover_image":
+        elif game.mode == "cover_image" or game.mode == "character_image":
             if current_round.image_url:   # just reload the page
                 return render(request, "quiz/gamemodes/guess_image.html", {
                     "game": game,
@@ -133,35 +134,18 @@ def game_update(request, game_id):
                 })
             else:  # no image asigned for the round yet
                 # asign a new modified image to the round
-                image_url = get_cover_image(topic, genres)
-                modified_image = image_random_modify(image_url)
-                # save info for the current round
-                current_round.image_url = image_url
-                current_round.modified_image = modified_image
-                current_round.save()
-                return render(request, "quiz/gamemodes/guess_image.html", {
-                    "game": game,
-                    "rounds": range(1, game.n_questions + 1),
-                    # "image_url": image_url,
-                    "modified_image": modified_image
-                })
+                if game.mode == "cover_image":
+                    image_url = get_cover_image(topic, genres)
+                elif game.mode == "character_image":
+                    image_url = get_character_image(topic, genres)
 
-        elif game.mode == "character_image":
-            if current_round.image_url:   # just reload the page
-                return render(request, "quiz/gamemodes/guess_image.html", {
-                    "game": game,
-                    "rounds": range(1, game.n_questions + 1),
-                    # "image_url": current_round.image_url,
-                    "modified_image": current_round.modified_image
-                })
-            else:  # no image asigned for the round yet
-                # asign a new modified image to the round
-                image_url = get_cover_image(topic, genres)
                 modified_image = image_random_modify(image_url)
+
                 # save info for the current round
                 current_round.image_url = image_url
                 current_round.modified_image = modified_image
                 current_round.save()
+
                 return render(request, "quiz/gamemodes/guess_image.html", {
                     "game": game,
                     "rounds": range(1, game.n_questions + 1),
@@ -172,8 +156,15 @@ def game_update(request, game_id):
         elif game.mode == "title":
             pass
 
+    else:
+        user_input = request.POST.get("user_input")
+        return JsonResponse({
+            "message": "Guess received",
+            "guess": user_input
+        })
 
-N_FETCHED_ELEMENTS = "50"  # number of media items to fetch from Anilist
+
+N_FETCHED_ELEMENTS = 50  # number of media items to fetch from Anilist
 
 
 def get_cover_image(topic, genres):
@@ -181,8 +172,8 @@ def get_cover_image(topic, genres):
     random_genre = random.choice(genres_list)
     url = 'https://graphql.anilist.co'
     query = '''
-    query ($type: MediaType, $genre: [String]) {
-        Page(perPage: 50) {
+    query ($type: MediaType, $genre: [String], $perPage: Int) {
+        Page(perPage: $perPage) {
             media(type: $type, genre_in: $genre, sort: POPULARITY_DESC) {
                 id
                 title {
@@ -197,7 +188,8 @@ def get_cover_image(topic, genres):
     '''
     variables = {
         "type": topic.upper(),
-        "genre": random_genre
+        "genre": random_genre,
+        "perPage": N_FETCHED_ELEMENTS
     }
     print("Fetching cover image for genre:", random_genre)
     response = requests.post(
@@ -219,8 +211,8 @@ def get_character_image(topic, genres):
 
     url = "https://graphql.anilist.co"
     query = '''
-    query ($type: MediaType, $genre: [String]) {
-      Page(perPage: 50) {
+    query ($type: MediaType, $genre: [String], $perPage: Int) {
+      Page(perPage: $perPage) {
         media(type: $type, genre_in: $genre, sort: POPULARITY_DESC) {
           characters(sort: ROLE) {
             nodes {
@@ -239,7 +231,8 @@ def get_character_image(topic, genres):
 
     variables = {
         "type": topic.upper(),  # Should be "ANIME"
-        "genre": random_genre
+        "genre": random_genre,
+        "perPage": N_FETCHED_ELEMENTS
     }
 
     response = requests.post(

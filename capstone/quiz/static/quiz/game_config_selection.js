@@ -138,15 +138,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // at least one genre must be selected (with class "selected")
+    if (document.getElementById("submitConfigButton")) {
+        document.getElementById("submitConfigButton").addEventListener("click", (event) => {
+            const genreCardsSelected = document.querySelectorAll(".genre-card.selected");
 
-    document.getElementById("submitConfigButton").addEventListener("click", (event) => {
-        const genreCardsSelected = document.querySelectorAll(".genre-card.selected");
-
-        if (genreCardsSelected.length === 0) {
-            event.preventDefault();
-            alert("Please select at least one genre.");
-            return;
-        }
-    });
+            if (genreCardsSelected.length === 0) {
+                event.preventDefault();
+                alert("Please select at least one genre.");
+                return;
+            }
+        });
+    }
 
 });
