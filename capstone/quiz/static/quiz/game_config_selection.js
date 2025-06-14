@@ -46,10 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return filtered_genres;
     }
 
+    
     function renderGenres(genres) {
         const container = document.getElementById("genreCards");
         const controlContainer = document.getElementById("genreControls");
-        const hiddenInput = document.getElementById("game-genres-hidden");
+        const hiddenInputGenres = document.getElementById("game-genres-hidden");
         const loadingSpinner = document.getElementById("loadingSpinner");
         let selected = new Set();
         
@@ -61,8 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // hide spinner
         loadingSpinner.style.display = "none";
         
-        const updateHiddenInput = () => {
-            hiddenInput.value = Array.from(selected).join(",");
+        const updateHiddenInputGenres = () => {
+            hiddenInputGenres.value = Array.from(selected).join(",");
         };
 
         // select all genres card
@@ -76,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.add("selected");
                 selected.add(card.dataset.value);
             });
-            updateHiddenInput();
+            updateHiddenInputGenres();
             triggerClickEffect(selectAllCard);
         });
         controlContainer.appendChild(selectAllCard);
@@ -91,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.remove("selected");
             });
             selected.clear();
-            updateHiddenInput();
+            updateHiddenInputGenres();
             triggerClickEffect(unselectAllCard);
         });
         controlContainer.appendChild(unselectAllCard);
@@ -112,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                 selected.add(genre);
                 }
-                hiddenInput.value = Array.from(selected).join(",");
+                hiddenInputGenres.value = Array.from(selected).join(",");
             });
 
             container.appendChild(card);
@@ -120,16 +121,32 @@ document.addEventListener('DOMContentLoaded', () => {
         
     }
 
-    fetchGenres()
-    /* update hidden input with all genres by default */
-    .then(genres => {
-        genres = filterGenres(genres);
-        const hiddenInput = document.getElementById("game-genres-hidden");
-        hiddenInput.value = genres.join(",");
-        return genres;
-    })
-    .then(renderGenres)
-    .catch(() => {
-        document.getElementById("loadingSpinner").innerHTML = '<div class="alert alert-danger" role="alert">Failed to load genres. Please try again later.</div>';
+    // Check if the hidden input for genres exists and fetch genres (meaning we are on the correct page)
+    if (document.getElementById("game-genres-hidden")) {
+        fetchGenres()
+        /* update hidden input with all genres by default */
+        .then(genres => {
+            genres = filterGenres(genres);
+            const hiddenInputGenres = document.getElementById("game-genres-hidden");
+            hiddenInputGenres.value = genres.join(",");
+            return genres;
+        })
+        .then(renderGenres)
+        .catch(() => {
+            document.getElementById("loadingSpinner").innerHTML = '<div class="alert alert-danger" role="alert">Failed to load genres. Please try again later.</div>';
         });
+    }
+
+    // at least one genre must be selected (with class "selected")
+
+    document.getElementById("submitConfigButton").addEventListener("click", (event) => {
+        const genreCardsSelected = document.querySelectorAll(".genre-card.selected");
+
+        if (genreCardsSelected.length === 0) {
+            event.preventDefault();
+            alert("Please select at least one genre.");
+            return;
+        }
+    });
+
 });

@@ -4,11 +4,13 @@
     --selected-card-border: #007bff;
     --selected-card-fill: #e6f0ff;
 
-    --pending: #c2c2c2;
+    --pending: #eeeeee;
     --wrong: #dc3545;
     --correct: #28a745;
 
     --secondary-color: #6c757d;
+
+
     --success-color: #28a745;
     --danger-color: #dc3545;
     --warning-color: #ffc107;
@@ -66,7 +68,7 @@
     padding: 15px;
     cursor: pointer;
     text-align: center;
-    transition: border-color 0.3s, background-color 0.3s;
+    transition: border-color 0.2s, background-color 0.2s;
   }
 
 .option-card.selected {
@@ -89,31 +91,41 @@
 }
 
 
-
-
-
-
 .scoreboard {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
     align-items: center;
     margin-bottom: 20px;
+    user-select: none;
 }
 
-.round-box {
+.blinker {
+  animation: blinker 1.5s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+.round-score-box {
     width: 35px;
     height: 35px;
     display: flex;
     justify-content: center;
+    border: 1px solid var(--secondary-color);
     align-items: center;
     font-weight: bold;
-    border-radius: 20px;
-    color: rgb(0, 0, 0);
     background-color: var(--pending);
   }
-  .correct {
-    background-color: var(--correct);
-  }
-  .wrong {
-    background-color: var(--wrong);
-  }
+
+.correct {
+  background-color: var(--correct);
+}
+.wrong {
+  background-color: var(--wrong);
+}
