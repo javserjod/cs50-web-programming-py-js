@@ -27,40 +27,40 @@
     </div>
     
 
-    <div class="text-center mt-3 d-flex align-items-start justify-content-center">
+    <div class="text-center mt-3">
 
-        <form id="skipButtonForm" class="d-flex justify-content-center mt-3" action="{% url 'skip_round' game.id %}" method="post">
-            {% csrf_token %}
-            <button class="btn btn-secondary me-2" type="submit" id="skipButton">
-                Skip
-            </button>
-        </form>
+        <!-- Buttons -->
+        <div class="d-flex justify-content-center gap-2 mb-2">
+            <form id="skipButtonForm" action="{% url 'skip_round' game.id %}" method="post" style="margin:0;">
+                {% csrf_token %}
+                <button class="btn btn-secondary" type="submit" id="skipButton" style="height: 38px; padding: 6px 12px;">
+                    Skip
+                </button>
+            </form>
 
-        <form id="guessImageForm" class="mt-4 d-flex justify-content-center align-items-start w-100" method="post">
-        {% csrf_token %}
-            <div class="position-relative me-2" style="width: 400px;">
-                {% if game.mode == 'Cover Image' %}
-                    <input type="text" class="form-control" placeholder="Enter your answer here"
-                        id="guessCoverInput" name="user_input" required autocomplete="off">
-                {% elif game.mode == 'Character Image' %}
-                    <input type="text" class="form-control" placeholder="Enter the character's name here"
-                        id="guessCharacterInput" name="user_input" required autocomplete="off">
-                {% endif %}
-                <div id="suggestions" class="suggestion-box"></div>
-            </div>
-
-            <button class="btn btn-primary" type="submit"
-                    formaction="{% url 'game_update' game.id %}" formmethod="post">
+            <button class="btn btn-primary" type="submit" style="height: 38px; padding: 6px 12px;" form="guessImageForm" id="submitGuessButton">
                 Submit
             </button>
+        </div>
+
+        <!-- Text Input and Selector -->
+        <form id="guessImageForm" method="post" style="max-width: 400px; margin: 0 auto;" action="{% url 'game_update' game.id %}">
+            {% csrf_token %}
+            <div class="position-relative">
+
+                {% if game.mode == 'Cover Image' %}
+                    <input type="text" class="form-control" placeholder="Enter your answer here" id="guessCoverInput" name="user_input" required autocomplete="off" style="width: 100%;">
+                {% elif game.mode == 'Character Image' %}
+                    <input type="text" class="form-control" placeholder="Enter the character's name here" id="guessCharacterInput" name="user_input" required autocomplete="off" style="width: 100%;">
+                {% endif %}
+
+                <div id="suggestions" class="suggestion-box"></div>
+            
+            </div>
         </form>
+
     </div>
-    
 
-    
-    
-
-    
 </div>
 
 {% endblock %}
