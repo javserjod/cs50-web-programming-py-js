@@ -6,43 +6,59 @@
             
     <div class="scoreboard">
         {% for round in rounds %}
-            {% if round is game.current_round.number %}
-                <div class="round-score-box blinker">{{ round }}</div>
+            {% if round.number is game.current_round.number %}
+                <div class="round-score-box blinker">{{ round.number }}</div>
             {% else %}
-                <div class="round-score-box">{{ round }}</div>
+                {% if round.state == 'CORRECT' %}
+                    <div class="round-score-box correct">{{ round.number }}</div>
+                {% elif round.state == 'WRONG' %}
+                    <div class="round-score-box wrong">{{ round.number }}</div>
+                {% else %}
+                    <div class="round-score-box">{{ round.number }}</div>
+                {% endif %}
             {% endif %}
         {% endfor %}
     </div>
 
     <h2 class="text-center mb-3">Round {{ game.current_round.number }}</h2>
-    <div>
-        {{ game }}
-        {{ game.genres }}
-        {{ game.topic }}
-        {{ game.mode }}
-        {{ game.n_questions }}
-        {{ cover_image_url}}
-    </div>
 
     <div class="text-center mt-3">
         <img src="{{ modified_image }}" alt="modified cover" class=" img-fluid rounded border shadow-lg" style="width: 400px; height: auto;">
     </div>
     
-    <form id="guessImageForm" class="mt-4 d-flex justify-content-center align-items-start" action="{% url 'game_update' game.id %}" method="post">
+
+    <div class="text-center mt-3 d-flex align-items-start justify-content-center">
+
+        <form id="skipButtonForm" class="d-flex justify-content-center mt-3" action="{% url 'skip_round' game.id %}" method="post">
+            {% csrf_token %}
+            <button class="btn btn-secondary me-2" type="submit" id="skipButton">
+                Skip
+            </button>
+        </form>
+
+        <form id="guessImageForm" class="mt-4 d-flex justify-content-center align-items-start w-100" method="post">
         {% csrf_token %}
-        <div class="position-relative" style="width: 400px;">
-            
-            {% if game.mode == 'cover_image' %}
-                <input type="text" class="form-control" placeholder="Enter your answer here" id="guessCoverInput" name="user_input" required autocomplete="off">
-            {% elif game.mode == 'character_image' %}
-                <input type="text" class="form-control" placeholder="Enter the character's name here" id="guessCharacterInput" name="user_input" required autocomplete="off">
-            {% endif %}
+            <div class="position-relative me-2" style="width: 400px;">
+                {% if game.mode == 'Cover Image' %}
+                    <input type="text" class="form-control" placeholder="Enter your answer here"
+                        id="guessCoverInput" name="user_input" required autocomplete="off">
+                {% elif game.mode == 'Character Image' %}
+                    <input type="text" class="form-control" placeholder="Enter the character's name here"
+                        id="guessCharacterInput" name="user_input" required autocomplete="off">
+                {% endif %}
+                <div id="suggestions" class="suggestion-box"></div>
+            </div>
 
-            <div id="suggestions" class="suggestion-box"></div>
-        </div>
+            <button class="btn btn-primary" type="submit"
+                    formaction="{% url 'game_update' game.id %}" formmethod="post">
+                Submit
+            </button>
+        </form>
+    </div>
+    
 
-        <button class="btn btn-primary ms-2" id="submitAnswer">Submit</button>
-    </form>
+    
+    
 
     
 </div>

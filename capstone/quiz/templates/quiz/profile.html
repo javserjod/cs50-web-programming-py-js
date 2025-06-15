@@ -1,6 +1,57 @@
 {% extends "quiz/layout.html" %}
 
 {% block body %}
+    <div class="container mt-5"> 
+        <h1 class="text-center mb-4">{{ user.username }}'s Game History </h1>
+        
+        {% for game in page_obj %}
 
+            <div class="card mb-3 shadow-sm record-card">
+                <div class="card-header d-flex justify-content-between">
+                    <h5 class="card-title">ID #{{ game.id }}</h5>
+                    <h5 class="card-title">{{ game.date_played|date:"F j, Y" }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Mode: {{ game.mode }} Mode</p>
+                    <p class="card-text">Current Round: {{ game.current_round.number }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <nav aria-label="Games navigation">
+        <ul class="pagination justify-content-center mt-4">
+            
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+
+            {% for i in page_obj.paginator.page_range %}
+                {% if i >= page_obj.number|add:"-2" and i <= page_obj.number|add:"2" %}
+                    {% if i == page_obj.number %}
+                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    
 
 {% endblock %}

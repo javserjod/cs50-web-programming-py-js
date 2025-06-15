@@ -13,6 +13,7 @@ import numpy as np
 import cv2
 import base64
 from django.http import JsonResponse
+from django.core.paginator import Paginator
 
 
 def home(request):
@@ -75,10 +76,24 @@ def logout_view(request):
     return HttpResponseRedirect(reverse("home"))
 
 
+GAMES_PER_PAGE = 10  # Number of games to display per page
+
+
 @login_required
 def profile(request, username):
     if request.method == "GET":
-        return render(request, "quiz/profile.html")
+
+        user = get_object_or_404(User, username=username)
+        all_games = Game.objects.filter(user=user).order_by('-date_played')
+
+        paginator = Paginator(all_games, GAMES_PER_PAGE)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
+        return render(request, "quiz/profile.html", {
+            "user": user,
+            "page_obj": page_obj,
+        })
 
 
 @login_required
@@ -105,8 +120,8 @@ def game_configuration(request):
                 )
 
             game.save()
-
             return HttpResponseRedirect(reverse("game_update", args=[game.id]))
+
         except IntegrityError:
             return render(request, "quiz/game_configuration.html", {
                 "message": "Error creating game. Please try again."
@@ -121,46 +136,112 @@ def game_update(request, game_id):
         genres = game.genres
         current_round = game.current_round()
 
-        if game.mode == "mix":
+        if game.mode == "Mix":
             pass
 
-        elif game.mode == "cover_image" or game.mode == "character_image":
+        elif game.mode == "Cover Image" or game.mode == "Character Image":
             if current_round.image_url:   # just reload the page
                 return render(request, "quiz/gamemodes/guess_image.html", {
                     "game": game,
-                    "rounds": range(1, game.n_questions + 1),
+                    "n_rounds": range(1, game.n_questions + 1),
+                    "rounds": game.rounds.all(),
                     # "image_url": current_round.image_url,
                     "modified_image": current_round.modified_image
                 })
             else:  # no image asigned for the round yet
                 # asign a new modified image to the round
-                if game.mode == "cover_image":
-                    image_url = get_cover_image(topic, genres)
-                elif game.mode == "character_image":
-                    image_url = get_character_image(topic, genres)
+                if game.mode == "Cover Image":
+                    image_url, correct_answer = get_cover_image(topic, genres)
+                elif game.mode == "Character Image":
+                    image_url, correct_answer = get_character_image(
+                        topic, genres)
 
                 modified_image = image_random_modify(image_url)
 
                 # save info for the current round
                 current_round.image_url = image_url
                 current_round.modified_image = modified_image
+                current_round.correct_answer = correct_answer
                 current_round.save()
 
                 return render(request, "quiz/gamemodes/guess_image.html", {
                     "game": game,
-                    "rounds": range(1, game.n_questions + 1),
+                    "n_rounds": range(1, game.n_questions + 1),
+                    "rounds": game.rounds.all(),
                     # "image_url": image_url,
-                    "modified_image": modified_image
+                    "modified_image": modified_image,
                 })
 
-        elif game.mode == "title":
+        elif game.mode == "Title":
             pass
 
     else:
         user_input = request.POST.get("user_input")
+        game = get_object_or_404(Game, id=game_id, user=request.user)
+        current_round = game.current_round()
+        current_round.user_answer = user_input
+
+        if user_input == current_round.correct_answer:
+            current_round.state = 'CORRECT'
+            current_round.save()  # save the round state
+
+            game.score += 1  # increment score
+            game.save()  # save the game score
+
+        else:
+            current_round.state = 'WRONG'
+            current_round.save()
+
+        if game.is_finished():
+            return HttpResponseRedirect(reverse("home"))
+        else:
+            return HttpResponseRedirect(reverse("game_update", args=[game.id]))
+
+
+@login_required
+def skip_round(request, game_id):
+    """
+    Skip the current round of the game.
+    This will mark the current round as 'WRONG' and move to the next round.
+    """
+    game = get_object_or_404(Game, id=game_id, user=request.user)
+    current_round = game.current_round()
+    current_round.state = 'WRONG'
+    current_round.save()
+
+    if game.is_finished():
+        return HttpResponseRedirect(reverse("home"))
+    else:
+        return HttpResponseRedirect(reverse("game_update", args=[game.id]))
+
+
+def check_answer(request, game_id):
+    user_input = request.POST.get("user_input")
+
+    game = get_object_or_404(Game, id=game_id, user=request.user)
+    current_round = game.current_round()
+    current_round.user_answer = user_input
+
+    if user_input == current_round.correct_answer:
+        current_round.state = 'CORRECT'
+        current_round.save()  # save the round state
+
+        game.score += 1  # increment score
+        game.save()  # save the game score
+
         return JsonResponse({
-            "message": "Guess received",
-            "guess": user_input
+            "message": "Correct answer!",
+            "score": game.score,
+            "round_number": current_round.number
+        })
+
+    else:
+        current_round.state = 'WRONG'
+        current_round.save()
+
+        return JsonResponse({
+            "message": "Wrong answer!",
+            "correct_answer": current_round.correct_answer
         })
 
 
@@ -168,6 +249,10 @@ N_FETCHED_ELEMENTS = 50  # number of media items to fetch from Anilist
 
 
 def get_cover_image(topic, genres):
+    """
+    Fetch a random cover image from Anilist based on the topic and genres.
+    Returns the image URL and the title of the media (correct answer).
+    """
     genres_list = genres_to_list(genres)
     random_genre = random.choice(genres_list)
     url = 'https://graphql.anilist.co'
@@ -191,7 +276,6 @@ def get_cover_image(topic, genres):
         "genre": random_genre,
         "perPage": N_FETCHED_ELEMENTS
     }
-    print("Fetching cover image for genre:", random_genre)
     response = requests.post(
         url, json={"query": query, "variables": variables})
     data = response.json()
@@ -201,11 +285,15 @@ def get_cover_image(topic, genres):
     if media_list:
         random_media = random.choice(media_list)   # Get a random media item
         # random media ordered by popularity. Difficulty could be leveraged with this.
-        return random_media["coverImage"]["large"]
+        return random_media["coverImage"]["large"], random_media["title"]["romaji"]
     return None
 
 
 def get_character_image(topic, genres):
+    """
+    Fetch a random character image from Anilist based on the topic and genres.
+    Returns the image URL of a character from a random media item and the character's name (correct answer).
+    """
     genres_list = genres_to_list(genres)
     random_genre = random.choice(genres_list)
 
@@ -247,8 +335,9 @@ def get_character_image(topic, genres):
         characters = media.get("characters", {}).get("nodes", [])
         for character in characters:
             img = character.get("image", {}).get("large")
-            if img:
-                candidates.append(img)
+            name = character.get("name", {}).get("full")
+            if img and name:
+                candidates.append((img, name))
 
     if candidates:
         return random.choice(candidates)
@@ -296,7 +385,7 @@ def pixelate_image_from_url(image_url):
 
     height, width = image.shape[:2]
     # desired "pixelated" size
-    w, h = (16, 16)
+    w, h = (32, 32)
 
     # resize image to "pixelated" size
     temp = cv2.resize(image, (w, h), interpolation=cv2.INTER_LINEAR)

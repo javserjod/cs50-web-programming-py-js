@@ -27,6 +27,9 @@ class Game(models.Model):
     def current_round(self):
         return self.rounds.filter(state=Round.PENDING).first()
 
+    def is_finished(self):
+        return not self.rounds.filter(state=Round.PENDING).exists()
+
 
 class Round(models.Model):
     PENDING = 'PENDING'
@@ -42,8 +45,12 @@ class Round(models.Model):
     number = models.IntegerField()
     state = models.CharField(
         max_length=10, choices=ROUND_STATES, default='PENDING')
+
     image_url = models.URLField(max_length=200, blank=True, null=True)
     modified_image = models.TextField(blank=True, null=True)
+
+    user_answer = models.CharField(max_length=200, blank=True, null=True)
+    correct_answer = models.CharField(max_length=200, blank=True, null=True)
 
     def __str__(self):
         return f"Round {self.number} of Game #{self.game.id}"
