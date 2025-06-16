@@ -2,64 +2,111 @@
 
 {% block body %}
 
-<div class="container mt-5 border p-5 shadow-lg rounded">
+<div class="container mt-5 border pt-5 pb-3 shadow-lg rounded">
             
     <div class="scoreboard">
         {% for round in rounds %}
             {% if round.number is game.current_round.number %}
-                <div class="round-score-box blinker">{{ round.number }}</div>
+                <a href="{% url 'game_update' game.id %}" class="round-score-box blinker">{{ round.number }}</a>
             {% else %}
                 {% if round.state == 'CORRECT' %}
-                    <div class="round-score-box correct">{{ round.number }}</div>
+                    <a href="{% url 'game_round_details' game.id round.number %}" class="round-score-box correct">{{ round.number }}</a>
                 {% elif round.state == 'WRONG' %}
-                    <div class="round-score-box wrong">{{ round.number }}</div>
+                    <a href="{% url 'game_round_details' game.id round.number %}" class="round-score-box wrong">{{ round.number }}</a>
                 {% else %}
-                    <div class="round-score-box">{{ round.number }}</div>
+                    <div class="round-score-box blocked">{{ round.number }}</div>
                 {% endif %}
             {% endif %}
         {% endfor %}
     </div>
-
-    <h2 class="text-center mb-3">Round {{ game.current_round.number }}</h2>
-
-    <div class="text-center mt-3">
-        <img src="{{ modified_image }}" alt="modified cover" class=" img-fluid rounded border shadow-lg" style="width: 400px; height: auto;">
-    </div>
     
+    {% if not round_detailed %}
+        <div class="text-center mb-4">
 
-    <div class="text-center mt-3">
+            <h2 class="mb-3">Round {{ game.current_round.number }}</h2>
 
-        <!-- Buttons -->
-        <div class="d-flex justify-content-center gap-2 mb-2">
-            <form id="skipButtonForm" action="{% url 'skip_round' game.id %}" method="post" style="margin:0;">
-                {% csrf_token %}
-                <button class="btn btn-secondary" type="submit" id="skipButton" style="height: 38px; padding: 6px 12px;">
-                    Skip
-                </button>
-            </form>
+            <div class="mb-4">
+                <img src="{{ modified_image }}" alt="Modified image" class=" img-fluid rounded border shadow-lg" style="width: 400px; height: auto;">
+            </div>
 
-            <button class="btn btn-primary" type="submit" style="height: 38px; padding: 6px 12px;" form="guessImageForm" id="submitGuessButton">
-                Submit
-            </button>
+            <div class="mb-3">
+                <!-- Buttons -->
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    <form id="skipButtonForm" action="{% url 'skip_round' game.id %}" method="post" style="margin:0;">
+                        {% csrf_token %}
+                        <button class="btn btn-secondary" type="submit" id="skipButton" style="height: 38px; padding: 6px 12px;">
+                            Skip
+                        </button>
+                    </form>
+
+                    <button class="btn btn-primary" type="submit" style="height: 38px; padding: 6px 12px;" form="guessImageForm" id="submitGuessButton">
+                        Submit
+                    </button>
+                </div>
+
+                <!-- Text Input and Selector -->
+                <form id="guessImageForm" method="post" style="max-width: 400px; margin: 0 auto;" action="{% url 'game_update' game.id %}">
+                    {% csrf_token %}
+                    <div class="position-relative">
+
+                        {% if game.mode == 'Cover Image' %}
+                            <input type="text" class="form-control" placeholder="Enter your answer here" id="guessCoverInput" name="user_input" required autocomplete="off" style="width: 100%;" data-game-source="{{ game.source }}">
+                        {% elif game.mode == 'Character Image' %}
+                            <input type="text" class="form-control" placeholder="Enter the character's name here" id="guessCharacterInput" name="user_input" required autocomplete="off" style="width: 100%;">
+                        {% endif %}
+
+                        <div id="suggestions" class="suggestion-box"></div>
+                    
+                    </div>
+                </form>
+            </div>
         </div>
 
-        <!-- Text Input and Selector -->
-        <form id="guessImageForm" method="post" style="max-width: 400px; margin: 0 auto;" action="{% url 'game_update' game.id %}">
-            {% csrf_token %}
-            <div class="position-relative">
+    {% else %}
+        <div class="text-center mb-4">
+            <h2 class="mb-3">Round {{ round_detailed.number }}</h2>
 
-                {% if game.mode == 'Cover Image' %}
-                    <input type="text" class="form-control" placeholder="Enter your answer here" id="guessCoverInput" name="user_input" required autocomplete="off" style="width: 100%;">
-                {% elif game.mode == 'Character Image' %}
-                    <input type="text" class="form-control" placeholder="Enter the character's name here" id="guessCharacterInput" name="user_input" required autocomplete="off" style="width: 100%;">
-                {% endif %}
+            <div id="image-alternate-container" class="mb-4">
+                <img src="{{ image_url }}" alt="Original image" class="img-fluid rounded border shadow-lg hidden" id="image-original" style="width: 400px; height: auto;">
 
-                <div id="suggestions" class="suggestion-box"></div>
-            
+                <img src="{{ modified_image }}" alt="Modified image" class="img-fluid rounded border shadow-lg" id="image-modified" style="width: 400px; height: auto;">
             </div>
-        </form>
 
-    </div>
+            <div class="mb-3" id="round-answer-data-container" data-round-db-id="{{ round_detailed.db_entry_id }}" data-game-source="{{ game.source }}" data-game-mode="{{ game.mode }}">
+
+                {% if round_detailed.state == 'CORRECT' %}
+                    <p style="font-size: 2.5rem; font-weight: bold;" class="text-success mb-1" id="round-answer">
+                        {{ round_detailed.correct_answer }}
+                    </p>
+                
+                {% elif round_detailed.state == 'WRONG' %}
+                    {% if round_detailed.user_answer %}
+                        <p class="lead text-danger">Your answer: {{ round_detailed.user_answer }}</p>
+                    {% else %}
+                        <p class="lead text-danger">You skipped the round</p>
+                    {% endif %}
+
+                    <p class="lead text-muted mb-1">Correct answer was: </p>
+                    <p style="font-size: 2.5rem; font-weight: bold;" id="round-answer">
+                        {{ round_detailed.correct_answer }}
+                    </p>
+                {% endif %}
+                
+                <em id="other-name" style="font-size: 1.7rem;"></em>
+                
+                <div id="round-details-container"></div>
+
+                <div id="character-participations" class="d-flex flex-wrap justify-content-center mt-5 gap-3 mx-auto" style="max-width:750px"></div>
+                    
+
+            </div>
+        </div>
+
+        
+    {% endif %}
+
+
+    
 
 </div>
 

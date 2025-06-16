@@ -105,7 +105,7 @@ def game_configuration(request):
         try:
             game = Game.objects.create(
                 user=request.user,
-                topic=request.POST.get("game_topic"),
+                source=request.POST.get("game_source"),
                 mode=request.POST.get("game_mode"),
                 genres=request.POST.getlist("game_genres"),
                 n_questions=int(
@@ -132,7 +132,7 @@ def game_configuration(request):
 def game_update(request, game_id):
     if request.method == "GET":
         game = get_object_or_404(Game, id=game_id, user=request.user)
-        topic = game.topic
+        source = game.source
         genres = game.genres
         current_round = game.current_round()
 
@@ -140,7 +140,8 @@ def game_update(request, game_id):
             pass
 
         elif game.mode == "Cover Image" or game.mode == "Character Image":
-            if current_round.image_url:   # just reload the page
+            # image already assigned to the round -> just render the page
+            if current_round.image_url:
                 return render(request, "quiz/gamemodes/guess_image.html", {
                     "game": game,
                     "n_rounds": range(1, game.n_questions + 1),
@@ -148,13 +149,14 @@ def game_update(request, game_id):
                     # "image_url": current_round.image_url,
                     "modified_image": current_round.modified_image
                 })
-            else:  # no image asigned for the round yet
-                # asign a new modified image to the round
+            # no image assigned to the round -> fetch a new one
+            else:
                 if game.mode == "Cover Image":
-                    image_url, correct_answer = get_cover_image(topic, genres)
+                    image_url, correct_answer, db_id = get_cover_image(
+                        source, genres)
                 elif game.mode == "Character Image":
-                    image_url, correct_answer = get_character_image(
-                        topic, genres)
+                    image_url, correct_answer, db_id = get_character_image(
+                        source, genres)
 
                 modified_image = image_random_modify(image_url)
 
@@ -162,6 +164,7 @@ def game_update(request, game_id):
                 current_round.image_url = image_url
                 current_round.modified_image = modified_image
                 current_round.correct_answer = correct_answer
+                current_round.db_entry_id = db_id
                 current_round.save()
 
                 return render(request, "quiz/gamemodes/guess_image.html", {
@@ -215,6 +218,19 @@ def skip_round(request, game_id):
         return HttpResponseRedirect(reverse("game_update", args=[game.id]))
 
 
+def game_round_details(request, game_id, round_number):
+    game = get_object_or_404(Game, id=game_id, user=request.user)
+    round = get_object_or_404(Round, game=game, number=round_number)
+    return render(request, "quiz/gamemodes/guess_image.html", {
+        "game": game,
+        "n_rounds": range(1, game.n_questions + 1),
+        "rounds": game.rounds.all(),
+        "round_detailed": round,
+        "image_url": round.image_url,
+        "modified_image": round.modified_image,
+    })
+
+
 def check_answer(request, game_id):
     user_input = request.POST.get("user_input")
 
@@ -248,9 +264,9 @@ def check_answer(request, game_id):
 N_FETCHED_ELEMENTS = 50  # number of media items to fetch from Anilist
 
 
-def get_cover_image(topic, genres):
+def get_cover_image(source, genres):
     """
-    Fetch a random cover image from Anilist based on the topic and genres.
+    Fetch a random cover image from Anilist based on the source and genres.
     Returns the image URL and the title of the media (correct answer).
     """
     genres_list = genres_to_list(genres)
@@ -272,7 +288,7 @@ def get_cover_image(topic, genres):
     }
     '''
     variables = {
-        "type": topic.upper(),
+        "type": source.upper(),
         "genre": random_genre,
         "perPage": N_FETCHED_ELEMENTS
     }
@@ -280,19 +296,18 @@ def get_cover_image(topic, genres):
         url, json={"query": query, "variables": variables})
     data = response.json()
     media_list = data["data"]["Page"]["media"]
-    print("Random genre:", random_genre)
 
     if media_list:
         random_media = random.choice(media_list)   # Get a random media item
         # random media ordered by popularity. Difficulty could be leveraged with this.
-        return random_media["coverImage"]["large"], random_media["title"]["romaji"]
+        return random_media["coverImage"]["large"], random_media["title"]["romaji"], random_media["id"]
     return None
 
 
-def get_character_image(topic, genres):
+def get_character_image(source, genres):
     """
-    Fetch a random character image from Anilist based on the topic and genres.
-    Returns the image URL of a character from a random media item and the character's name (correct answer).
+    Fetch a random character image from Anilist based on the source and genres.
+    Returns the image URL of a character from a random media item, the character's name (correct answer) and its ID in AniList for future use.
     """
     genres_list = genres_to_list(genres)
     random_genre = random.choice(genres_list)
@@ -300,25 +315,26 @@ def get_character_image(topic, genres):
     url = "https://graphql.anilist.co"
     query = '''
     query ($type: MediaType, $genre: [String], $perPage: Int) {
-      Page(perPage: $perPage) {
-        media(type: $type, genre_in: $genre, sort: POPULARITY_DESC) {
-          characters(sort: ROLE) {
-            nodes {
-              name {
-                full
-              }
-              image {
-                large
-              }
+        Page(perPage: $perPage) {
+            media(type: $type, genre_in: $genre, sort: POPULARITY_DESC) {
+                characters(sort: ROLE) {
+                    nodes {
+                        id
+                        name {
+                            full
+                        }
+                        image {
+                            large
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
     '''
 
     variables = {
-        "type": topic.upper(),  # Should be "ANIME"
+        "type": source.upper(),  # Should be "ANIME"
         "genre": random_genre,
         "perPage": N_FETCHED_ELEMENTS
     }
@@ -336,8 +352,9 @@ def get_character_image(topic, genres):
         for character in characters:
             img = character.get("image", {}).get("large")
             name = character.get("name", {}).get("full")
+            id = character.get("id")
             if img and name:
-                candidates.append((img, name))
+                candidates.append((img, name, id))
 
     if candidates:
         return random.choice(candidates)

@@ -1,4 +1,7 @@
 :root {
+    --font-color: black;
+    --font-color-light: #333;
+
     --unselected-card-border: #ddd;
     --unselected-card-fill: #f8f9fa;
     --selected-card-border: #007bff;
@@ -99,7 +102,12 @@
     flex-wrap: wrap;
     align-items: center;
     margin-bottom: 20px;
-    user-select: none;
+}
+
+.scoreboard a {
+    text-decoration: none;
+    color: var(--font-color);
+    font-weight: bold;
 }
 
 .blinker {
@@ -125,9 +133,15 @@
 
 .correct {
   background-color: var(--correct);
+  cursor: pointer;
 }
 .wrong {
   background-color: var(--wrong);
+  cursor: pointer;
+}
+
+.blocked {
+  cursor: not-allowed;
 }
 
 
@@ -153,6 +167,7 @@
 }
 
 
+/* HISTORY/RECORD CARD STYLES --------------------------------------------------*/
 .record-card {
     position: relative;
     overflow: hidden;
@@ -170,4 +185,14 @@
     background-color: var(--selected-card-fill);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     
+}
+
+.profile-container a {
+    text-decoration: none;
+    color: var(--font-color-light);
+}
+
+/* GENERIC STYLES --------------------------------------------------*/
+.hidden {
+    display: none;
 }

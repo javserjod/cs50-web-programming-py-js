@@ -18,12 +18,12 @@
             {% csrf_token %}
 
             <div class="form-group mt-5">
-                <label for="topic" class="mb-2"><strong style="font-size: 20px;">Topic</strong></label>
-                <div id="topicCards" class="d-flex gap-3 justify-content-center mb-4">
+                <label for="source" class="mb-2"><strong style="font-size: 20px;">Source</strong></label>
+                <div id="sourceCards" class="d-flex gap-3 justify-content-center mb-4">
                   <div class="option-card selected" data-value="ANIME">Anime</div>
                   <div class="option-card" data-value="MANGA">Manga</div>
                 </div>
-                <input type="hidden" name="game_topic" id="game-topic-hidden" value="ANIME">
+                <input type="hidden" name="game_source" id="game-source-hidden" value="ANIME">
             </div>
 
 
@@ -35,7 +35,7 @@
                     <div class="option-card" data-value="Character Image">Character Image</div>
                     <div class="option-card" data-value="Title">Title</div>
                   </div>
-                <input type="hidden" name="game_mode" id="game-mode-hidden" value="mix">
+                <input type="hidden" name="game_mode" id="game-mode-hidden" value="Mix">
             </div>
             
             <div class="form-group mt-5">
@@ -57,9 +57,9 @@
             <div class="form-group mt-5">
                 <label for="number_of_questions" class="mb-1"><strong style="font-size: 20px;">Number of Questions</strong></label>
 
-                <input type="range" class="form-range" id="number-of-questions" name="number_of_questions" min="1" max="25" value="10" oninput="this.nextElementSibling.value = this.value">
+                <input type="range" class="form-range" id="number-of-questions" name="number_of_questions" min="1" max="100" value="10" oninput="this.nextElementSibling.value = this.value">
 
-                <input class="form-control mx-auto text-center" style="width: 80px;" onblur="this.value = this.value < 1 ? 1 : this.value > 25 ? 25 : this.value" type="number"  value="10" min="1" max="25" onchange="this.previousElementSibling.value = this.value" />
+                <input class="form-control mx-auto text-center" style="width: 80px;" onblur="this.value = this.value < 1 ? 1 : this.value > 100 ? 100 : this.value" type="number"  value="10" min="1" max="100" onchange="this.previousElementSibling.value = this.value" />
             </div>
 
             <button type="submit" id="submitConfigButton" class="btn btn-primary mt-5">Start Game</button>

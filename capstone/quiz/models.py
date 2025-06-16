@@ -16,7 +16,7 @@ class Game(models.Model):
     score = models.IntegerField(default=0)
     date_played = models.DateTimeField(auto_now_add=True)
 
-    topic = models.CharField(max_length=50)
+    source = models.CharField(max_length=50)
     mode = models.CharField(max_length=50)
     genres = models.JSONField(default=list)
     n_questions = models.IntegerField(default=10)
@@ -46,6 +46,7 @@ class Round(models.Model):
     state = models.CharField(
         max_length=10, choices=ROUND_STATES, default='PENDING')
 
+    db_entry_id = models.IntegerField(blank=True, null=True)
     image_url = models.URLField(max_length=200, blank=True, null=True)
     modified_image = models.TextField(blank=True, null=True)
 

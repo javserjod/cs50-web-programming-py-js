@@ -7,6 +7,106 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const N_RESULTS_PER_PAGE = 10; // Number of results per page for suggestions
 
+    // Cover Image Gamemode ------------------------------
+    if (inputCover){
+        /* must differentiate between anime and manga */
+        const source = inputCover.dataset.gameSource;
+
+        inputCover.addEventListener("input", () => {
+            const queryText = inputCover.value.trim();
+
+            // Cancel previous timer to avoid spam
+            clearTimeout(timeout);
+
+            if (queryText.length < 1) {
+                suggestionBox.innerHTML = "";
+                return;
+            }
+
+            timeout = setTimeout(() => {
+                fetchSuggestionsMedia(queryText);
+            }, 500); // delay to avoid calling on every keystroke
+        });
+
+        async function fetchSuggestionsMedia(search) {
+            const query = `
+            query ($search: String, $perPage: Int) {
+                Page(perPage: $perPage) {
+                    media(search: $search, type: ${source}) {
+                        id
+                        title { 
+                            romaji 
+                            english
+                        }
+                    }
+                }
+            }`;
+
+            const variables = {
+                search,
+                "perPage": N_RESULTS_PER_PAGE,
+            };
+
+            try {
+                const res = await fetch("https://graphql.anilist.co", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query, variables })
+                });
+
+                const data = await res.json();
+                const media = data.data.Page.media;
+                
+                const filtered = media.filter(item => {
+                    const romaji = item.title.romaji?.toLowerCase() || "";
+                    const english = item.title.english?.toLowerCase() || "";
+                    const lowerSearch = search.toLowerCase();
+
+                    return romaji.includes(lowerSearch) || english.includes(lowerSearch);
+                });
+                
+                const results = filtered.length > 0 ? filtered : null;
+                
+                if (results === null) {
+                    suggestionBox.innerHTML = "<div class='text-muted px-2 py-1'>No results found</div>";
+                    return;
+                }
+                else {
+                    suggestionBox.innerHTML = "";
+                    results.forEach(media => {
+                        const item = document.createElement("div");
+                        item.className = "p-2 suggestion-item";
+                        item.style.cursor = "pointer";
+
+                        const romaji = media.title.romaji || "";
+                        const english = media.title.english || "";
+
+                        item.innerHTML = `<strong>${romaji}</strong> ${english ? `– <em>${english}</em>` : ""}`;
+
+                        item.addEventListener("click", () => {
+                            inputCover.value = romaji;
+                            selectedAnime = romaji;
+                            suggestionBox.innerHTML = "";
+                        });
+
+                        suggestionBox.appendChild(item);
+                    });
+                }
+
+            } catch (error) {
+                console.error("Error fetching suggestions", error);
+            }
+        }
+
+        // Hide suggestions when clicking outside
+        document.addEventListener("click", (e) => {
+            if (!suggestionBox.contains(e.target) && e.target !== inputCover) {
+                suggestionBox.innerHTML = "";
+            }
+        });
+    }
+
+
 
     // Character Image Gamemode ------------------------------
     if (inputCharacter) {
@@ -112,101 +212,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // Cover Image Gamemode ------------------------------
-    if (inputCover){
-
-        inputCover.addEventListener("input", () => {
-            const queryText = inputCover.value.trim();
-
-            // Cancel previous timer to avoid spam
-            clearTimeout(timeout);
-
-            if (queryText.length < 1) {
-                suggestionBox.innerHTML = "";
-                return;
-            }
-
-            timeout = setTimeout(() => {
-                fetchSuggestionsAnimes(queryText);
-            }, 500); // delay to avoid calling on every keystroke
-        });
-
-        async function fetchSuggestionsAnimes(search) {
-            const query = `
-            query ($search: String, $perPage: Int) {
-                Page(perPage: $perPage) {
-                    media(search: $search, type: ANIME) {
-                        id
-                        title { 
-                            romaji 
-                            english
-                        }
-                    }
-                }
-            }`;
-
-            const variables = {
-                search,
-                "perPage": N_RESULTS_PER_PAGE
-            };
-
-            try {
-                const res = await fetch("https://graphql.anilist.co", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ query, variables })
-                });
-
-                const data = await res.json();
-                const media = data.data.Page.media;
-                
-                const filtered = media.filter(item => {
-                    const romaji = item.title.romaji?.toLowerCase() || "";
-                    const english = item.title.english?.toLowerCase() || "";
-                    const lowerSearch = search.toLowerCase();
-
-                    return romaji.includes(lowerSearch) || english.includes(lowerSearch);
-                });
-                
-                const results = filtered.length > 0 ? filtered : null;
-                
-                if (results === null) {
-                    suggestionBox.innerHTML = "<div class='text-muted px-2 py-1'>No results found</div>";
-                    return;
-                }
-                else {
-                    suggestionBox.innerHTML = "";
-                    results.forEach(media => {
-                        const item = document.createElement("div");
-                        item.className = "p-2 suggestion-item";
-                        item.style.cursor = "pointer";
-
-                        const romaji = media.title.romaji || "";
-                        const english = media.title.english || "";
-
-                        item.innerHTML = `<strong>${romaji}</strong> ${english ? `– <em>${english}</em>` : ""}`;
-
-                        item.addEventListener("click", () => {
-                            inputCover.value = romaji;
-                            selectedAnime = romaji;
-                            suggestionBox.innerHTML = "";
-                        });
-
-                        suggestionBox.appendChild(item);
-                    });
-                }
-
-            } catch (error) {
-                console.error("Error fetching suggestions", error);
-            }
-        }
-
-        // Hide suggestions when clicking outside
-        document.addEventListener("click", (e) => {
-            if (!suggestionBox.contains(e.target) && e.target !== inputCover) {
-                suggestionBox.innerHTML = "";
-            }
-        });
-    }
     
 })

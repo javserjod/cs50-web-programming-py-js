@@ -1,14 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Topic selection cards
-    const topicCards = document.querySelectorAll('#topicCards .option-card');
-    const hiddenInputGameTopic = document.getElementById('game-topic-hidden');
+    // Source selection cards
+    const sourceCards = document.querySelectorAll('#sourceCards .option-card');
+    const hiddenInputGameSource = document.getElementById('game-source-hidden');
 
-    topicCards.forEach(card => {
+    sourceCards.forEach(card => {
     card.addEventListener('click', () => {
-        topicCards.forEach(c => c.classList.remove('selected'));
+        sourceCards.forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
-        hiddenInputGameTopic.value = card.getAttribute('data-value');
+        hiddenInputGameSource.value = card.getAttribute('data-value');
     });
     });
 

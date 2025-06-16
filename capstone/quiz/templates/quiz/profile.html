@@ -1,21 +1,23 @@
 {% extends "quiz/layout.html" %}
 
 {% block body %}
-    <div class="container mt-5"> 
+    <div class="container mt-5 profile-container"> 
         <h1 class="text-center mb-4">{{ user.username }}'s Game History </h1>
         
         {% for game in page_obj %}
-
-            <div class="card mb-3 shadow-sm record-card">
-                <div class="card-header d-flex justify-content-between">
-                    <h5 class="card-title">ID #{{ game.id }}</h5>
-                    <h5 class="card-title">{{ game.date_played|date:"F j, Y" }}</h5>
+            <a href="{% url 'game_update' game.id %}" class="text-decoration-none">
+                <div class="card mb-3 shadow-sm record-card">
+                    <div class="card-header d-flex justify-content-between position-relative">
+                        <h5 class="card-title">ID #{{ game.id }}</h5>
+                        <h5 class="card-title position-absolute start-50 translate-middle-x">{{ game.n_questions }} rounds</h5>
+                        <h5 class="card-title">{{ game.date_played|date:"F j, Y" }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Mode: {{ game.mode }}</p>
+                        <p class="card-text">Current Round: {{ game.current_round.number }}</p>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <p class="card-text">Mode: {{ game.mode }} Mode</p>
-                    <p class="card-text">Current Round: {{ game.current_round.number }}</p>
-                </div>
-            </div>
+            </a>
         {% endfor %}
     </div>
 
@@ -52,6 +54,5 @@
         </ul>
     </nav>
 
-    
 
 {% endblock %}
