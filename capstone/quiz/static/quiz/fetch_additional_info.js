@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Container for fetched data. Just visual effect for loading
         const fetchedDataContainer = sentDataContainer.querySelector("#fetched-data-container");
-        console.log(fetchedDataContainer)
         fetchedDataContainer.classList.remove("visible"); 
         fetchedDataContainer.classList.add("fade-in");
 

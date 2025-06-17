@@ -26,7 +26,7 @@
             <h2 class="mb-3">Round {{ game.current_round.number }}</h2>
 
             <div class="mb-4">
-                <img src="{{ modified_image }}" alt="Modified image" class=" img-fluid rounded border shadow-lg" style="width: 400px; height: auto;">
+                <img src="{{ modified_image }}" alt="Modified image" class=" img-fluid rounded border shadow-lg" id="image-to-guess" style="width: 400px; height: auto;">
             </div>
 
             <div class="mb-3">
@@ -66,10 +66,10 @@
         <div class="text-center mb-4">
             <h2 class="mb-3">Round {{ round_detailed.number }}</h2>
 
-            <div id="image-alternate-container" class="mb-4">
-                <img src="{{ image_url }}" alt="Original image" class="img-fluid rounded border shadow-lg hidden" id="image-original" style="width: 400px; height: auto;">
+            <div id="image-alternate-container" class="mb-4" style="cursor: pointer; display: inline-block" data-round-state="{{ round_detailed.state }}">
+                <img src="{{ image_url }}" alt="Original image" class="img-fluid rounded border shadow-lg" id="image-original" style="width: 400px; height: auto;">
 
-                <img src="{{ modified_image }}" alt="Modified image" class="img-fluid rounded border shadow-lg" id="image-modified" style="width: 400px; height: auto;">
+                <img src="{{ modified_image }}" alt="Modified image" class="img-fluid rounded border shadow-lg hidden" id="image-modified" style="width: 400px; height: auto;">
             </div>
 
             <div class="mb-3" id="round-answer-data-container" data-round-db-id="{{ round_detailed.db_entry_id }}" data-game-mode="{{ game.mode }}">

@@ -198,6 +198,8 @@
 }
 
 
+
+/* ADDITIONAL FETCHED INFO FOR ROUNDS ------------------------------*/
 .fade-in {
     opacity: 0;
     transform: translateY(10px);
@@ -207,4 +209,14 @@
 .fade-in.visible {
     opacity: 1;
     transform: translateY(0);
+}
+
+
+/* ROUND DETAILS --------------------------------------------------*/
+.glow-correct {
+    box-shadow: 0 0 30px 2px var(--correct);
+}
+
+.glow-wrong {
+    box-shadow: 0 0 30px 2px var(--wrong);
 }

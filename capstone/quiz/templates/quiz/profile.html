@@ -4,21 +4,27 @@
     <div class="container mt-5 profile-container"> 
         <h1 class="text-center mb-4">{{ user.username }}'s Game History </h1>
         
-        {% for game in page_obj %}
-            <a href="{% url 'game_update' game.id %}" class="text-decoration-none">
-                <div class="card mb-3 shadow-sm record-card">
-                    <div class="card-header d-flex justify-content-between position-relative">
-                        <h5 class="card-title">ID #{{ game.id }}</h5>
-                        <h5 class="card-title position-absolute start-50 translate-middle-x">{{ game.n_questions }} rounds</h5>
-                        <h5 class="card-title">{{ game.date_played|date:"F j, Y" }}</h5>
+        {% if page_obj.paginator.count == 0 %}
+            <div class="alert alert-info text-center" role="alert">
+                No games found.
+            </div>
+        {% else %}
+            {% for game in page_obj %}
+                <a href="{% url 'game_update' game.id %}" class="text-decoration-none">
+                    <div class="card mb-3 shadow-sm record-card">
+                        <div class="card-header d-flex justify-content-between position-relative">
+                            <h5 class="card-title">ID #{{ game.id }}</h5>
+                            <h5 class="card-title position-absolute start-50 translate-middle-x">{{ game.n_questions }} rounds</h5>
+                            <h5 class="card-title">{{ game.date_played|date:"F j, Y" }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Mode: {{ game.mode }}</p>
+                            <p class="card-text">Current Round: {{ game.current_round.number }}</p>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <p class="card-text">Mode: {{ game.mode }}</p>
-                        <p class="card-text">Current Round: {{ game.current_round.number }}</p>
-                    </div>
-                </div>
-            </a>
-        {% endfor %}
+                </a>
+            {% endfor %}
+        
     </div>
 
     <nav aria-label="Games navigation">
@@ -53,6 +59,7 @@
             {% endif %}
         </ul>
     </nav>
+    {% endif %}
 
 
 {% endblock %}
