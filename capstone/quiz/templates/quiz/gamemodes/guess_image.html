@@ -113,8 +113,8 @@
 
             </div>
             
-            <div id="image-alternate-container" class="mb-4 rounded" style="cursor: pointer; display: inline-block" data-round-state="{{ round_detailed.state }}">
-                <img src="{{ image_url }}" alt="Original image" class="img-fluid rounded shadow-lg" id="image-original" style="width: 400px; height: auto;">
+            <div id="image-alternate-container" class="mb-4 rounded" style="cursor: pointer; display: inline-block; min-height: 500px;" data-round-state="{{ round_detailed.state }}">
+                <img src="{{ image_url }}" alt="Original image" class="img-fluid rounded shadow-lg fade-in" id="image-original" style="width: 400px; height: auto;">
 
                 <img src="{{ modified_image }}" alt="Modified image" class="img-fluid rounded shadow-lg hidden" id="image-modified" style="width: 400px; height: auto;">
             </div>
@@ -154,7 +154,19 @@
         
     {% endif %}
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const image = document.getElementById("image-original");
 
+        if (image.complete) {
+            image.classList.add("visible");
+        } else {
+            image.addEventListener("load", function () {
+                image.classList.add("visible");
+            });
+        }
+    });
+</script>
     
 
 </div>

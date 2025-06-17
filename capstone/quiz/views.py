@@ -195,10 +195,7 @@ def game_update(request, game_id):
             current_round.state = 'WRONG'
             current_round.save()
 
-        if game.is_finished():
-            return HttpResponseRedirect(reverse("home"))
-        else:
-            return HttpResponseRedirect(reverse("game_update", args=[game.id]))
+        return HttpResponseRedirect(reverse("game_round_details", args=[game.id, current_round.number]))
 
 
 @login_required
@@ -212,10 +209,7 @@ def skip_round(request, game_id):
     current_round.state = 'WRONG'
     current_round.save()
 
-    if game.is_finished():
-        return HttpResponseRedirect(reverse("home"))
-    else:
-        return HttpResponseRedirect(reverse("game_update", args=[game.id]))
+    return HttpResponseRedirect(reverse("game_round_details", args=[game.id, current_round.number]))
 
 
 def game_round_details(request, game_id, round_number):
