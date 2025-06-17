@@ -133,7 +133,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 Page(perPage: $perPage) {
                     characters(search: $search) {
                         id
-                        name { full }
+                        name { 
+                            full
+                            alternative
+                            }
                         media(sort: POPULARITY_DESC) {
                             nodes {
                                 title {
@@ -160,18 +163,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 const characters = data.data.Page.characters;
 
-                /* check if the search term is empty */
-                const filtered = characters.filter(char =>
-                    char.name.full.toLowerCase().includes(search.toLowerCase())
-                );
+                /* search term */
+                const filtered = characters.filter(char =>{
+                    const searchLower = search.toLowerCase();
+
+                    // full character name
+                    const fullMatch = char.name.full?.toLowerCase().includes(searchLower);
+
+                    // alternative names (only the first 3)
+                    const altArray = Array.isArray(char.name.alternative) ? char.name.alternative.slice(0, 3) : [];
+                    const altMatch = altArray.some(alt => alt?.toLowerCase().includes(searchLower));
+
+                    // most popular media in which the character appears 
+                    // -> too many requests
+                    //const mediaTitle = char.media?.nodes?.[0]?.title?.romaji || "";
+                    //const mediaMatch = mediaTitle.toLowerCase().includes(searchLower);
+
+                    //return fullMatch || altMatch || mediaMatch;
+
+                    return fullMatch || altMatch;
+                });
 
                 const results = filtered.length > 0 ? filtered : null;
 
-                if (results === null) {
+                if (!results) {
                     suggestionBox.innerHTML = "<div class='text-muted px-2 py-1' style='cursor: pointer;'>No results found</div>";
                     return;
-                }
-                else {
+                } else {
                     suggestionBox.innerHTML = "";
                     results.forEach(char => {
                         const item = document.createElement("div");
