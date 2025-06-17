@@ -182,7 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         /* most popular media title */
                         const media = char.media?.nodes?.[0]?.title?.romaji || "";
 
-                        item.textContent = media ? `${name} (${media})` : name;
+                        item.innerHTML = media ? `<strong>${name}</strong> - ${media}` : `<strong>${name}</strong>`;
+
 
                         item.addEventListener("click", () => {
                             inputCharacter.value = name;

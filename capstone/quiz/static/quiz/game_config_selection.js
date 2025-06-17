@@ -42,8 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function filterGenres(genres) {
         // remove adult genres
-        filtered_genres = genres.filter(genre => genre !== "Hentai");
-        return filtered_genres;
+        return genres.filter(genre => genre !== "Hentai");
     }
 
     

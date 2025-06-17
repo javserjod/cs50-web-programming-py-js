@@ -72,7 +72,7 @@
                 <img src="{{ modified_image }}" alt="Modified image" class="img-fluid rounded border shadow-lg" id="image-modified" style="width: 400px; height: auto;">
             </div>
 
-            <div class="mb-3" id="round-answer-data-container" data-round-db-id="{{ round_detailed.db_entry_id }}" data-game-source="{{ game.source }}" data-game-mode="{{ game.mode }}">
+            <div class="mb-3" id="round-answer-data-container" data-round-db-id="{{ round_detailed.db_entry_id }}" data-game-mode="{{ game.mode }}">
 
                 {% if round_detailed.state == 'CORRECT' %}
                     <p style="font-size: 2.5rem; font-weight: bold;" class="text-success mb-1" id="round-answer">
@@ -92,11 +92,13 @@
                     </p>
                 {% endif %}
                 
-                <em id="other-name" style="font-size: 1.7rem;"></em>
-                
-                <div id="round-details-container"></div>
+                <div id="fetched-data-container">
+                    <em id="other-name" style="font-size: 1.7rem;"></em>
+                    
+                    <div id="round-details-container"></div>
 
-                <div id="character-participations" class="d-flex flex-wrap justify-content-center mt-5 gap-3 mx-auto" style="max-width:750px"></div>
+                    <div id="character-participations" class="d-flex flex-wrap justify-content-center mt-5 gap-3 mx-auto" style="max-width:750px"></div>
+                </div>
                     
 
             </div>
