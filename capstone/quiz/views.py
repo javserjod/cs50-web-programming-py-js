@@ -14,6 +14,8 @@ import cv2
 import base64
 from django.http import JsonResponse
 from django.core.paginator import Paginator
+from django.utils import timezone
+from datetime import timedelta
 
 
 def home(request):
@@ -128,15 +130,19 @@ def game_configuration(request):
             })
 
 
+FETCH_COOLDOWN_SECONDS = 5
+
+
 @login_required
 def game_update(request, game_id):
     if request.method == "GET":
+
         game = get_object_or_404(Game, id=game_id, user=request.user)
         source = game.source
         genres = game.genres
         current_round = game.current_round()
 
-        if game.mode == "Cover Image" or game.mode == "Character Image":
+        if game.mode in ["Cover Image", "Character Image"]:
 
             # image already assigned to the round -> just render the page
             if current_round.image_url:
@@ -150,29 +156,40 @@ def game_update(request, game_id):
 
             # no image assigned to the round -> fetch a new one
             else:
-                if game.mode == "Cover Image":
-                    image_url, correct_answer, db_id = get_cover_image(
-                        source, genres)
-                elif game.mode == "Character Image":
-                    image_url, correct_answer, db_id = get_character_image(
-                        source, genres)
+                now = timezone.now()
 
-                modified_image = image_random_modify(image_url)
+                if current_round.last_fetch and (now - current_round.last_fetch) < timedelta(seconds=FETCH_COOLDOWN_SECONDS):
+                    return render(request, "quiz/gamemodes/guess_image.html", {
+                        "game": game,
+                        "n_rounds": range(1, game.n_questions + 1),
+                        "rounds": game.rounds.all(),
+                        "modified_image": current_round.modified_image
+                    })
+                else:
+                    if game.mode == "Cover Image":
+                        image_url, correct_answer, db_id = get_cover_image(
+                            source, genres)
+                    elif game.mode == "Character Image":
+                        image_url, correct_answer, db_id = get_character_image(
+                            source, genres)
 
-                # save info for the current round
-                current_round.image_url = image_url
-                current_round.modified_image = modified_image
-                current_round.correct_answer = correct_answer
-                current_round.db_entry_id = db_id
-                current_round.save()
+                    modified_image = image_random_modify(image_url)
 
-                return render(request, "quiz/gamemodes/guess_image.html", {
-                    "game": game,
-                    "n_rounds": range(1, game.n_questions + 1),
-                    "rounds": game.rounds.all(),
-                    # "image_url": image_url,
-                    "modified_image": modified_image,
-                })
+                    # save info for the current round
+                    current_round.image_url = image_url
+                    current_round.modified_image = modified_image
+                    current_round.correct_answer = correct_answer
+                    current_round.db_entry_id = db_id
+                    current_round.last_fetch = now
+                    current_round.save()
+
+                    return render(request, "quiz/gamemodes/guess_image.html", {
+                        "game": game,
+                        "n_rounds": range(1, game.n_questions + 1),
+                        "rounds": game.rounds.all(),
+                        # "image_url": image_url,
+                        "modified_image": modified_image,
+                    })
         else:
             return HttpResponse(status=400)
 

@@ -2,9 +2,9 @@
 
 {% block body %}
 
-<div class="container mt-5 border pt-5 pb-3 shadow-lg rounded">
+<div class="container mt-5 w-100">
             
-    <div class="scoreboard">
+    <div class="scoreboard mb-4">
         {% for round in rounds %}
             {% if round.number is game.current_round.number %}
                 <a href="{% url 'game_update' game.id %}" class="round-score-box blinker">{{ round.number }}</a>
@@ -22,7 +22,7 @@
     
     {% if not round_detailed %}
         <div class="text-center mb-4">
-            <div class="container d-flex justify-content-between align-items-center mb-4 p-0" style="width:400px">
+            <div class="container d-flex justify-content-between align-items-center mb-4 p-0" style="max-width:var(--max-width)">
                 
                 {% with game.current_round.number|add:"-1" as prev_round_number %}
                     {% if prev_round_number < 1 %}
@@ -30,7 +30,7 @@
                             <i class="bi bi-arrow-left"></i>
                         </button>
                     {% else %}
-                        <button class="btn btn-secondary" onclick=window.location.href="{% url 'game_round_details' game.id prev_round_number %}" style="height: 38px; padding: 6px 12px;">
+                        <button class="btn btn-secondary" onclick=window.location.href="{% url 'game_round_details' game.id prev_round_number %}" style="height: 38px; padding: 6px 12px;" title="Previous Round">
                             <i class="bi bi-arrow-left"></i>
                         </button>
                     {% endif %}
@@ -44,8 +44,8 @@
                 
             </div>
 
-            <div class="mb-4 rounded">
-                <img src="{{ modified_image }}" alt="Modified image" class=" img-fluid rounded shadow-lg" id="image-to-guess" style="width: 400px; height: auto;">
+            <div class="mb-4 rounded" id="image-to-guess-container">
+                <img src="{{ modified_image }}" alt="Modified image" class=" img-fluid rounded shadow-lg" id="image-to-guess" style="max-width:var(--max-width); height: auto;">
             </div>
 
             <div class="mb-3">
@@ -58,13 +58,13 @@
                         </button>
                     </form>
 
-                    <button class="btn btn-primary" type="submit" style="height: 38px; padding: 6px 12px;" form="guessImageForm" id="submitGuessButton">
+                    <button class="btn btn-primary" type="submit" style="height: 38px; padding: 6px 12px;" form="guess-image-form" id="submit-guess-button">
                         Submit
                     </button>
                 </div>
 
                 <!-- Text Input and Selector -->
-                <form id="guessImageForm" method="post" style="max-width: 400px; margin: 0 auto;" action="{% url 'game_update' game.id %}">
+                <form id="guess-image-form" method="post" style="max-width:var(--max-width); margin: 0 auto;" action="{% url 'game_update' game.id %}">
                     {% csrf_token %}
                     <div class="position-relative">
 
@@ -83,7 +83,7 @@
 
     {% else %}
         <div class="text-center mb-4">
-            <div class="container d-flex justify-content-between align-items-center mb-4 p-0" style="width:400px">
+            <div class="container d-flex justify-content-between align-items-center mb-4 p-0" style="max-width:var(--max-width)">
                 
                 {% with round_detailed.number|add:"-1" as prev_round_number %}
                     {% if prev_round_number < 1 %}
@@ -91,7 +91,7 @@
                             <i class="bi bi-arrow-left"></i>
                         </button>
                     {% else %}
-                        <button class="btn btn-secondary" onclick=window.location.href="{% url 'game_round_details' game.id prev_round_number %}" style="height: 38px; padding: 6px 12px;">
+                        <button class="btn btn-secondary" onclick=window.location.href="{% url 'game_round_details' game.id prev_round_number %}" style="height: 38px; padding: 6px 12px;" title="Previous Round">
                             <i class="bi bi-arrow-left"></i>
                         </button>
                     {% endif %}
@@ -105,7 +105,7 @@
                             <i class="bi bi-arrow-right"></i>
                         </button>
                     {% else %}
-                        <button class="btn btn-secondary" onclick=window.location.href="{% url 'game_round_details' game.id next_round_number %}" style="height: 38px; padding: 6px 12px;">
+                        <button class="btn btn-secondary" onclick=window.location.href="{% url 'game_round_details' game.id next_round_number %}" style="height: 38px; padding: 6px 12px;" title="Next Round">
                             <i class="bi bi-arrow-right"></i>
                         </button>
                     {% endif %}
@@ -113,43 +113,43 @@
 
             </div>
             
-            <div id="image-alternate-container" class="mb-4 rounded position-relative" style="cursor: pointer; display: inline-block; min-height: 600px; min-width: 400px;"              data-round-state="{{ round_detailed.state }}">
+            <div id="image-alternate-container" class="mb-3 rounded position-relative" style="cursor: pointer; display: inline-block; min-height: 600px; max-width:var(--max-width)" data-round-state="{{ round_detailed.state }}">
 
-                <img src="{{ image_url }}" alt="Original image" class="img-fluid rounded shadow-lg fade-in" id="image-original" style="position: absolute; top: 0; left: 0; width: 400px; height: auto; z-index: 2; transition: opacity 0.5s ease;">
+                <img src="{{ image_url }}" alt="Original image" class="img-fluid rounded fade-in" id="image-original" style="position: absolute; top: 0; left: 0; max-width:var(--max-width); height: auto; z-index: 2; transition: opacity 0.5s ease;">
 
-                <img src="{{ modified_image }}" alt="Modified image" class="img-fluid rounded shadow-lg" id="image-modified" style="position: absolute; top: 0; left: 0; width: 400px; height: auto; z-index: 1; transition: opacity 0.5s ease; opacity: 1;">
+                <img src="{{ modified_image }}" alt="Modified image" class="img-fluid rounded" id="image-modified" style="position: absolute; top: 0; left: 0; max-width:var(--max-width); height: auto; z-index: 1; transition: opacity 0.5s ease; opacity: 1;">
             </div>
 
             
 
-            <div class="mb-3" id="round-answer-data-container" data-round-db-id="{{ round_detailed.db_entry_id }}" data-game-mode="{{ game.mode }}">
+            <div class="mb-1" id="round-answer-data-container" data-round-db-id="{{ round_detailed.db_entry_id }}" data-game-mode="{{ game.mode }}">
 
                 {% if round_detailed.state == 'CORRECT' %}
-                    <p style="font-size: 2.5rem; font-weight: bold;" class="text-success mb-1" id="round-answer">
+                    <p style="font-size: 2.5rem; font-weight: bold;" class="text-success" id="round-answer">
                         {{ round_detailed.correct_answer }}
                     </p>
                 
                 {% elif round_detailed.state == 'WRONG' %}
                     {% if round_detailed.user_answer %}
-                        <p class="lead text-danger">Your answer: {{ round_detailed.user_answer }}</p>
+                        <p class="lead text-danger mb-1">Your answer: {{ round_detailed.user_answer }}</p>
                     {% else %}
-                        <p class="lead text-danger">You skipped the round</p>
+                        <p class="lead text-danger mb-1">You skipped the round</p>
                     {% endif %}
 
-                    <p class="lead text-muted mb-1">Correct answer was: </p>
-                    <p style="font-size: 2.5rem; font-weight: bold;" id="round-answer">
+                    <p class="lead text-muted mb-0">Correct answer was: </p>
+                    
+                    <p style="font-size: 2.5rem; font-weight: bold;" id="round-answer" class="mb-0">
                         {{ round_detailed.correct_answer }}
                     </p>
                 {% endif %}
                 
                 <div id="fetched-data-container">
-                    <em id="other-name" style="font-size: 1.7rem;"></em>
+                    <em id="other-name" style="font-size: 1.5rem;"></em>
                     
                     <div id="round-details-container"></div>
 
-                    <div id="character-participations" class="d-flex flex-wrap justify-content-center mt-5 gap-3 mx-auto" style="max-width:750px"></div>
+                    <div id="character-participations" class="d-flex flex-wrap justify-content-center mt-5 gap-3 mx-auto" style="max-width:800px"></div>
                 </div>
-                    
 
             </div>
         </div>

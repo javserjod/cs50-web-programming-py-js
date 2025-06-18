@@ -15,29 +15,40 @@
                 {% else %}
                     <a href="{% url 'game_update' game.id %}" class="text-decoration-none">
                 {% endif %}
-                        <div class="card mb-3 shadow-sm record-card 
-                            {% if game.is_finished %}
-                                bg-success text-white
+                        <div class="card mb-3 p-2 shadow-sm record-card 
+                            {% if game.is_finished and game.mean_score >= 50 %}
+                                bg-success bg-gradient text-white
                             {% else %}
-                                bg-light text-dark
+                                {% if game.is_finished and game.mean_score < 50 %}
+                                    bg-danger bg-gradient text-white
+                                {% else %}
+                                    bg-gray-100 bg-gradient text-dark
+                                {% endif %}
                             {% endif %}">
-                            <div class="card-header d-flex justify-content-between position-relative align-items-center ">
+
+                            <div class="card-header py-1 d-flex justify-content-between position-relative align-items-center flex-wrap">
                                 <h5 class="card-title m-0">ID #{{ game.id }}</h5>
-                                <h5 class="card-title position-absolute start-50 translate-middle-x m-0">{{ game.n_questions }} rounds</h5>
                                 
-                                <button type="submit" class="btn btn-danger btn-sm m-1 delete-game-button" data-game-id="{{game.id}}" title="Delete Game">
+                                <button type="submit" class="btn btn-primary btn-sm mx-0 delete-game-button" data-game-id="{{game.id}}" title="Delete Game">
                                     <i class="bi bi-trash"></i>
                                 </button>
                                 
                             </div>
+                            
                             <div class="card-body">
-                                <p class="card-text">Mode: {{ game.mode }}</p>
+                                <p class="card-text">Gamemode: {{ game.mode }}</p>
+                                <p class="card-text">Created on: {{ game.date_played|date:"Y-m-d" }}</p>
+
                                 {% if game.is_finished %}
                                     <p class="card-text">Status: <span>Finished</span></p>
-                                    <p class="card-text">Final Score: <span class="text-success">{{ game.score }}</span></p>
+                                    
                                 {% else %}
-                                    <p class="card-text">Current Round: {{ game.current_round.number }}</p>
+                                        
+                                    <p class="card-text">Status: <strong>{{ game.current_round.number|add:"-1" }}/{{ game.n_questions }}</strong> rounds played</p>
+                                    
                                 {% endif %}
+
+                                <p class="card-text">Success rate: <strong>{{ game.mean_score|floatformat:2 }} %</strong> </p>
                                 
                             </div>
                         </div>

@@ -2,11 +2,11 @@
 
 {% block body %}
 
-<div class="container mt-5 border p-5 shadow-lg rounded">
-    <h2 class="text-center mb-3">Game Configuration</h2>
+<div class="container mt-4 w-100">
+    <h2 class="text-center">Game Configuration</h2>
 
     <div class="text-center mb-4">
-        <p> Prepare your game! </p>
+        <p class="lead">Configure your game settings below:</p>
 
         {% if error_message %}
             <div class="alert alert-danger" role="alert">
@@ -14,12 +14,12 @@
             </div>
         {% endif %}
         
-        <form method="post" class="mt-5" action="{% url 'game_configuration' %}" >
+        <form method="post" class="mt-2" action="{% url 'game_configuration' %}" >
             {% csrf_token %}
 
-            <div class="form-group mt-5">
+            <div class="form-group mb-4">
                 <label for="source" class="mb-2"><strong style="font-size: 20px;">Source</strong></label>
-                <div id="sourceCards" class="d-flex gap-3 justify-content-center mb-4">
+                <div id="sourceCards" class="d-flex gap-3 justify-content-center">
                   <div class="option-card selected" data-value="ANIME">Anime</div>
                   <div class="option-card" data-value="MANGA">Manga</div>
                 </div>
@@ -27,16 +27,16 @@
             </div>
 
 
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label for="gamemode" class="mb-2"><strong style="font-size: 20px;">Game Mode</strong></label>
-                <div id="gameModeCards" class="d-flex gap-3 justify-content-center mb-4">
+                <div id="gameModeCards" class="d-flex gap-3 justify-content-center">
                   <div class="option-card selected" data-value="Character Image">Character Image</div>
                   <div class="option-card" data-value="Cover Image">Cover Image</div>
                 </div>
                 <input type="hidden" name="game_mode" id="game-mode-hidden" value="Character Image">
             </div>
             
-            <div class="form-group mt-5">
+            <div class="form-group mb-4">
                 <label for="genres" class="mb-2"><strong style="font-size: 20px;">Genres</strong></label>
 
                   <div id="loadingSpinner" class="text-center mt-5 mb-3">
@@ -52,7 +52,7 @@
                 <input type="hidden" name="game_genres" id="game-genres-hidden" value="" required>
             </div>
 
-            <div class="form-group mt-5">
+            <div class="form-group">
                 <label for="number_of_questions" class="mb-1"><strong style="font-size: 20px;">Number of Questions</strong></label>
 
                 <input type="range" class="form-range" id="number-of-questions" name="number_of_questions" min="1" max="100" value="10" oninput="this.nextElementSibling.value = this.value">

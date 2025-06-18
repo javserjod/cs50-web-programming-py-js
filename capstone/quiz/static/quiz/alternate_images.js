@@ -4,12 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const modifiedImage = document.getElementById("image-modified");
     const imageAlternateContainer = document.getElementById("image-alternate-container");
 
-    // adapt glow border height and width to image
-    imageAlternateContainer.style.minHeight = modifiedImage.offsetHeight + "px";
-    imageAlternateContainer.style.minWidth = modifiedImage.offsetWidth + "px";
-
 
     if (imageAlternateContainer){
+
+        // adapt glow border height and width to image
+        imageAlternateContainer.style.minHeight = modifiedImage.offsetHeight + "px";
+        imageAlternateContainer.style.minWidth = modifiedImage.offsetWidth + "px";
+
         const roundState = imageAlternateContainer.dataset.roundState;
         
         if (roundState === "CORRECT") {

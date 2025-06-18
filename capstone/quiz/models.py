@@ -54,6 +54,7 @@ class Round(models.Model):
     number = models.IntegerField()
     state = models.CharField(
         max_length=10, choices=ROUND_STATES, default='PENDING')
+    last_fetch = models.DateTimeField(null=True, blank=True)
 
     db_entry_id = models.IntegerField(blank=True, null=True)
     image_url = models.URLField(max_length=200, blank=True, null=True)

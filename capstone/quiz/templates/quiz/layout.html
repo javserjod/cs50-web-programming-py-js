@@ -22,27 +22,28 @@
         <script src="{% static 'quiz/alternate_images.js' %}"></script>
         <script src="{% static 'quiz/fetch_additional_info.js' %}"></script>
         <script src="{% static 'quiz/delete_game.js' %}"></script>
+        <script src="{% static 'quiz/focus_image.js' %}"></script>
 
         <!-- CSRF token to access from JS to call fetch -->
         <meta name="csrf-token" content="{{ csrf_token }}">
+
+        <!-- Viewport for responsive design -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
 
     </head>
     <body class="d-flex flex-column min-vh-100">
         
         <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm" >
-            <div class="container d-flex align-items-end justify-content-between">
+            <div class="container d-flex align-items-center justify-content-between flex-wrap">
                 <a class="navbar-brand" style="font-size: 26px;" href="{% url 'home' %}"><strong>Quiz Royale</strong></a>
-                
-                {% if user.is_authenticated %}
-                    <span class="navbar-text content">Loggued in as <strong>{{ user.username }}</strong></span>
-                {% endif %}
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse justify-content-end text-end p-1" id="navbarMenu">
-                    <ul class="navbar-nav ms-auto gap-4">
+                    <ul class="navbar-nav ms-auto gap-2">
                         {% if user.is_authenticated %}
                             <li class="nav-item">
                                 <a class="nav-link d-inline-block p-1 my-2" href="{% url 'home' %}">Home</a>

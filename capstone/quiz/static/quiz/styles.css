@@ -1,4 +1,6 @@
 :root {
+    --max-width: 400px;
+
     --font-color: black;
     --font-color-light: #333;
 
@@ -13,7 +15,6 @@
 
     --secondary-color: #6c757d;
 
-
     --success-color: #28a745;
     --danger-color: #dc3545;
     --warning-color: #ffc107;
@@ -25,10 +26,11 @@
 
 
 .container {
-    max-width: 1000px;
-    min-width: 200px;
+    width: 100%;
+    max-width: 2000px;
+    min-width: 300px;
     margin: 0 auto;
-    
+    padding: 0 15px;
 }
 
 /* CONTROL CARD STYLES --------------------------------------------------*/
@@ -101,7 +103,6 @@
     gap: 5px;
     flex-wrap: wrap;
     align-items: center;
-    margin-bottom: 20px;
 }
 
 .scoreboard a {
