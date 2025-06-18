@@ -113,11 +113,14 @@
 
             </div>
             
-            <div id="image-alternate-container" class="mb-4 rounded" style="cursor: pointer; display: inline-block; min-height: 500px;" data-round-state="{{ round_detailed.state }}">
-                <img src="{{ image_url }}" alt="Original image" class="img-fluid rounded shadow-lg fade-in" id="image-original" style="width: 400px; height: auto;">
+            <div id="image-alternate-container" class="mb-4 rounded position-relative" style="cursor: pointer; display: inline-block; min-height: 600px; min-width: 400px;"              data-round-state="{{ round_detailed.state }}">
 
-                <img src="{{ modified_image }}" alt="Modified image" class="img-fluid rounded shadow-lg hidden" id="image-modified" style="width: 400px; height: auto;">
+                <img src="{{ image_url }}" alt="Original image" class="img-fluid rounded shadow-lg fade-in" id="image-original" style="position: absolute; top: 0; left: 0; width: 400px; height: auto; z-index: 2; transition: opacity 0.5s ease;">
+
+                <img src="{{ modified_image }}" alt="Modified image" class="img-fluid rounded shadow-lg" id="image-modified" style="position: absolute; top: 0; left: 0; width: 400px; height: auto; z-index: 1; transition: opacity 0.5s ease; opacity: 1;">
             </div>
+
+            
 
             <div class="mb-3" id="round-answer-data-container" data-round-db-id="{{ round_detailed.db_entry_id }}" data-game-mode="{{ game.mode }}">
 
@@ -154,20 +157,6 @@
         
     {% endif %}
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const image = document.getElementById("image-original");
-
-        if (image.complete) {
-            image.classList.add("visible");
-        } else {
-            image.addEventListener("load", function () {
-                image.classList.add("visible");
-            });
-        }
-    });
-</script>
-    
 
 </div>
 

@@ -4,6 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const modifiedImage = document.getElementById("image-modified");
     const imageAlternateContainer = document.getElementById("image-alternate-container");
 
+    // adapt glow border height and width to image
+    imageAlternateContainer.style.minHeight = modifiedImage.offsetHeight + "px";
+    imageAlternateContainer.style.minWidth = modifiedImage.offsetWidth + "px";
+
 
     if (imageAlternateContainer){
         const roundState = imageAlternateContainer.dataset.roundState;
@@ -15,10 +19,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
+        modifiedImage.style.opacity = 0;
+        modifiedImage.style.pointerEvents = 'none';
+
         imageAlternateContainer.addEventListener("click", () => {
-        originalImage.classList.toggle("hidden");
-        modifiedImage.classList.toggle("hidden");
+            if (originalImage.style.opacity === "1" || originalImage.style.opacity === "") {
+                // show modified, hide original
+                originalImage.style.opacity = 0;
+                originalImage.style.pointerEvents = 'none';
+                modifiedImage.style.opacity = 1;
+                modifiedImage.style.pointerEvents = 'auto';
+            } else {
+                // show original, hide modified
+                originalImage.style.opacity = 1;
+                originalImage.style.pointerEvents = 'auto';
+                modifiedImage.style.opacity = 0;
+                modifiedImage.style.pointerEvents = 'none';
+            }
         });
+        
     }
     
 });

@@ -1,5 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
     
+
+    const image = document.getElementById("image-original");
+    
+    if (image) {
+        if (image.complete) {
+            image.classList.add("visible");
+        } else {
+            image.addEventListener("load", function () {
+                image.classList.add("visible");
+            });
+        }
+    }
+
     const sentDataContainer = document.getElementById("round-answer-data-container");
     
     if (sentDataContainer){

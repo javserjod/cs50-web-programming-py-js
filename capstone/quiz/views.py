@@ -136,10 +136,7 @@ def game_update(request, game_id):
         genres = game.genres
         current_round = game.current_round()
 
-        if game.mode == "Mix":
-            pass
-
-        elif game.mode == "Cover Image" or game.mode == "Character Image":
+        if game.mode == "Cover Image" or game.mode == "Character Image":
 
             # image already assigned to the round -> just render the page
             if current_round.image_url:
