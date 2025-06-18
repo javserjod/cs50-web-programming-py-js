@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 document.getElementById("other-name").textContent = character.name.alternative.join(", ");
             }
-            console.log("Character data:", character);
+            //console.log("Character data:", character);
             
             const desc = character.description || "No description available.";
 

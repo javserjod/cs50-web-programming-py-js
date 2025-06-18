@@ -192,6 +192,16 @@
     color: var(--font-color-light);
 }
 
+.delete-card-effect {
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+  transform: translateY(-30px) scale(0.4);
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+
+
 /* GENERIC STYLES --------------------------------------------------*/
 .hidden {
     display: none;
@@ -202,7 +212,7 @@
 /* ADDITIONAL FETCHED INFO FOR ROUNDS ------------------------------*/
 .fade-in {
     opacity: 0;
-    transform: translateY(100px);
+    transform: translateY(50px);
     transition: opacity 0.5s ease, transform 0.5s ease;
 }
 

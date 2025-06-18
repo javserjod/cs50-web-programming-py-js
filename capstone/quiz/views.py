@@ -176,6 +176,8 @@ def game_update(request, game_id):
                     # "image_url": image_url,
                     "modified_image": modified_image,
                 })
+        else:
+            return HttpResponse(status=400)
 
     # POST request handling = user submitting an answer
     else:
@@ -212,6 +214,7 @@ def skip_round(request, game_id):
     return HttpResponseRedirect(reverse("game_round_details", args=[game.id, current_round.number]))
 
 
+@login_required
 def game_round_details(request, game_id, round_number):
     if request.method == "GET":
         game = get_object_or_404(Game, id=game_id, user=request.user)
@@ -230,6 +233,21 @@ def game_round_details(request, game_id, round_number):
         # if user tries to access a round that is not finished yet
         else:
             return HttpResponseRedirect(reverse("game_update", args=[game.id]))
+
+
+@login_required
+def delete_game(request, game_id):
+    if request.method == "POST":
+        """
+        Delete a game instance and all its associated rounds.
+        """
+        try:
+            print(f"Deleting game with ID: {game_id}")
+            game = get_object_or_404(Game, id=game_id, user=request.user)
+            game.delete()  # this will also delete all associated rounds
+            return HttpResponse(status=204)
+        except:
+            return HttpResponse(status=400)
 
 
 N_FETCHED_ELEMENTS = 50  # number of media items to fetch from Anilist

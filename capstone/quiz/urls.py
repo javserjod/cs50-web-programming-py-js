@@ -13,5 +13,6 @@ urlpatterns = [
     path("skip_round/<int:game_id>", views.skip_round, name="skip_round"),
     path("game/<int:game_id>/<int:round_number>",
          views.game_round_details, name="game_round_details"),
+    path("delete_game/<int:game_id>", views.delete_game, name="delete_game"),
 
 ]

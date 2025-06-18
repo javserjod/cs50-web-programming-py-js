@@ -12,7 +12,8 @@ class User(AbstractUser):
 
 
 class Game(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='games')
     score = models.IntegerField(default=0)
     date_played = models.DateTimeField(auto_now_add=True)
 
@@ -29,6 +30,14 @@ class Game(models.Model):
 
     def is_finished(self):
         return not self.rounds.filter(state=Round.PENDING).exists()
+
+    def mean_score(self):
+        rounds = self.rounds.all()
+        correct_rounds = rounds.filter(state=Round.CORRECT).count()
+        wrong_rounds = rounds.filter(state=Round.WRONG).count()
+        if correct_rounds + wrong_rounds == 0:
+            return "No rounds played"
+        return correct_rounds / (correct_rounds + wrong_rounds) * 100
 
 
 class Round(models.Model):
