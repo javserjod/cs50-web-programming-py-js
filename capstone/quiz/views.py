@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
@@ -12,10 +12,14 @@ import re
 import numpy as np
 import cv2
 import base64
-from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import timedelta
+from django.template.loader import render_to_string
+
+GAMES_PER_PAGE = 12  # Number of games to display per page in user's profile
+N_FETCHED_ELEMENTS = 50  # Number of media items to fetch from Anilist
+MAX_ATTEMPTS = 5     # Maximum attempts to fetch a valid image or character according to the parameters given by the user
 
 
 def home(request):
@@ -76,9 +80,6 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("home"))
-
-
-GAMES_PER_PAGE = 10  # Number of games to display per page
 
 
 @login_required
@@ -166,12 +167,16 @@ def game_update(request, game_id):
                         "modified_image": current_round.modified_image
                     })
                 else:
-                    if game.mode == "Cover Image":
-                        image_url, correct_answer, db_id = get_cover_image(
-                            source, genres)
-                    elif game.mode == "Character Image":
-                        image_url, correct_answer, db_id = get_character_image(
-                            source, genres)
+                    image_url, correct_answer, db_id = None, None, None
+                    while all([image_url is None, correct_answer is None, db_id is None]):
+                        if game.mode == "Cover Image":
+                            print("Fetching cover image...")
+                            image_url, correct_answer, db_id = get_cover_image(
+                                source, genres, game)
+                        elif game.mode == "Character Image":
+                            print("Fetching character image...")
+                            image_url, correct_answer, db_id = get_character_image(
+                                source, genres, game)
 
                     modified_image = image_random_modify(image_url)
 
@@ -259,15 +264,45 @@ def delete_game(request, game_id):
             print(f"Deleting game with ID: {game_id}")
             game = get_object_or_404(Game, id=game_id, user=request.user)
             game.delete()  # this will also delete all associated rounds
-            return HttpResponse(status=204)
         except:
-            return HttpResponse(status=400)
+            return JsonResponse({"error": "Game not found."}, status=404)
+
+        user = request.user
+        all_games = Game.objects.filter(
+            user=request.user).order_by('-date_played')
+
+        paginator = Paginator(all_games, GAMES_PER_PAGE)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
+        html = render_to_string("quiz/profile.html", {
+            "user": user,
+            "page_obj": page_obj,
+        })
+
+        return JsonResponse({"html": html})
+        all_games = Game.objects.filter(
+            user=request.user).order_by('-date_played')
+
+        page_number = int(request.GET.get('page', 1))
+
+        paginator = Paginator(all_games, GAMES_PER_PAGE)
+
+        try:
+            next_page = paginator.page(page_number + 1)
+            next_game = next_page.object_list[0]
+        except:
+            next_game = None
+
+        if next_game:
+            card_html = render_to_string(
+                'quiz/components/game_card.html', {"game": next_game, "user": request.user})
+            return JsonResponse({"html": card_html})
+        else:
+            return JsonResponse({"html": None})
 
 
-N_FETCHED_ELEMENTS = 50  # number of media items to fetch from Anilist
-
-
-def get_cover_image(source, genres):
+def get_cover_image(source, genres, game):
     """
     Fetch a random cover image from Anilist based on the source and genres.
     Returns the image URL and the title of the media (correct answer).
@@ -286,6 +321,7 @@ def get_cover_image(source, genres):
                 coverImage {
                     large
                 }
+                favourites
             }
         }
     }
@@ -300,14 +336,23 @@ def get_cover_image(source, genres):
     data = response.json()
     media_list = data["data"]["Page"]["media"]
 
-    if media_list:
-        random_media = random.choice(media_list)   # Get a random media item
+    if not media_list:
+        return None
+
+    for _ in range(MAX_ATTEMPTS):
+        random_media = random.choice(
+            media_list)   # Get a random media item
         # random media ordered by popularity. Difficulty could be leveraged with this.
-        return random_media["coverImage"]["large"], random_media["title"]["romaji"], random_media["id"]
-    return None
+        img = random_media.get("coverImage", {}).get("large")
+        title = random_media.get("title", {}).get("romaji")
+        id = random_media.get("id")
+        if img and title and (not game.used_id(id)):
+            return (img, title, id)
+
+    raise ValueError("No valid media found after maximum attempts.")
 
 
-def get_character_image(source, genres):
+def get_character_image(source, genres, game):
     """
     Fetch a random character image from Anilist based on the source and genres.
     Returns the image URL of a character from a random media item, the character's name (correct answer) and its ID in AniList for future use.
@@ -320,6 +365,7 @@ def get_character_image(source, genres):
     query ($type: MediaType, $genre: [String], $perPage: Int) {
         Page(perPage: $perPage) {
             media(type: $type, genre_in: $genre, sort: POPULARITY_DESC) {
+                favourites
                 characters(sort: ROLE) {
                     nodes {
                         id
@@ -329,6 +375,7 @@ def get_character_image(source, genres):
                         image {
                             large
                         }
+                        favourites
                     }
                 }
             }
@@ -337,7 +384,7 @@ def get_character_image(source, genres):
     '''
 
     variables = {
-        "type": source.upper(),  # Should be "ANIME"
+        "type": source.upper(),  # Should be "ANIME" or "MANGA"
         "genre": random_genre,
         "perPage": N_FETCHED_ELEMENTS
     }
@@ -348,21 +395,25 @@ def get_character_image(source, genres):
 
     media_list = data.get("data", {}).get("Page", {}).get("media", [])
 
-    # valid characters with images
-    candidates = []
-    for media in media_list:
+    if not media_list:
+        return None
+
+    for _ in range(MAX_ATTEMPTS):
+        media = random.choice(media_list)  # get a random media item
+        # print(media)
         characters = media.get("characters", {}).get("nodes", [])
-        for character in characters:
-            img = character.get("image", {}).get("large")
-            name = character.get("name", {}).get("full")
-            id = character.get("id")
-            if img and name:
-                candidates.append((img, name, id))
+        if not characters:
+            continue
+        # get a random character from the media and its info
+        character = random.choice(characters)
+        img = character.get("image", {}).get("large")
+        name = character.get("name", {}).get("full")
+        id = character.get("id")
 
-    if candidates:
-        return random.choice(candidates)
+        if img and name and (not game.used_id(id)):
+            return (img, name, id)
 
-    return None
+    raise ValueError("No valid character found after maximum attempts.")
 
 
 def image_random_modify(image_url):

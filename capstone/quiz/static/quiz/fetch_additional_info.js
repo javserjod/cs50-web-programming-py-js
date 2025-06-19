@@ -29,11 +29,29 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (gamemode === "Cover Image") {
             fetchAnswerMedia(correctAnswerId)
+            .catch(error => {
+                console.error("Error fetching media data:", error);
+                const container = document.getElementById("round-details-container");
+                container.innerHTML = `
+                    <div class="alert alert-danger" role="alert">; 
+                        Failed to fetch media data. Please try again later.
+                    </div>
+                `;
+            })
             .then(data => {
                 renderAnswerMedia(data)})
 
         } else if (gamemode === "Character Image") {
             fetchAnswerCharacter(correctAnswerId)
+            .catch(error => {
+                console.error("Error fetching character data:", error);
+                const container = document.getElementById("round-details-container");
+                container.innerHTML = `
+                    <div class="alert alert-danger" role="alert">;
+                        Failed to fetch character data. Please try again later.
+                    </div>
+                `;
+            })
             .then(data => {
                 renderAnswerCharacter(data)})
         }

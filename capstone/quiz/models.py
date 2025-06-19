@@ -39,6 +39,13 @@ class Game(models.Model):
             return "No rounds played"
         return correct_rounds / (correct_rounds + wrong_rounds) * 100
 
+    def used_id(self, id):
+        """
+        Checks if id is already used in rounds of this game.
+        Returns True if the id is already used, False otherwise.
+        """
+        return self.rounds.filter(db_entry_id=id).exists()
+
 
 class Round(models.Model):
     PENDING = 'PENDING'

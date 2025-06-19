@@ -1,7 +1,8 @@
 {% extends "quiz/layout.html" %}
 
 {% block body %}
-    <div class="container mt-5 profile-container"> 
+    <div class="container mt-5 profile-container d-flex flex-column align-items-center">
+         
         <h1 class="text-center mb-4">{{ user.username }}'s Game History </h1>
         
         {% if page_obj.paginator.count == 0 or user.games.count == 0 %}
@@ -9,52 +10,13 @@
                 No games found.
             </div>
         {% else %}
-            {% for game in page_obj %}
-                {% if game.is_finished %}
-                    <a href="{% url 'game_round_details' game.id 1 %}" class="text-decoration-none">
-                {% else %}
-                    <a href="{% url 'game_update' game.id %}" class="text-decoration-none">
-                {% endif %}
-                        <div class="card mb-3 p-2 shadow-sm record-card 
-                            {% if game.is_finished and game.mean_score >= 50 %}
-                                bg-success bg-gradient text-white
-                            {% else %}
-                                {% if game.is_finished and game.mean_score < 50 %}
-                                    bg-danger bg-gradient text-white
-                                {% else %}
-                                    bg-gray-100 bg-gradient text-dark
-                                {% endif %}
-                            {% endif %}">
-
-                            <div class="card-header py-1 d-flex justify-content-between position-relative align-items-center flex-wrap">
-                                <h5 class="card-title m-0">ID #{{ game.id }}</h5>
-                                
-                                <button type="submit" class="btn btn-primary btn-sm mx-0 delete-game-button" data-game-id="{{game.id}}" title="Delete Game">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                                
-                            </div>
-                            
-                            <div class="card-body">
-                                <p class="card-text">Gamemode: {{ game.mode }}</p>
-                                <p class="card-text">Created on: {{ game.date_played|date:"Y-m-d" }}</p>
-
-                                {% if game.is_finished %}
-                                    <p class="card-text">Status: <span>Finished</span></p>
-                                    
-                                {% else %}
-                                        
-                                    <p class="card-text">Status: <strong>{{ game.current_round.number|add:"-1" }}/{{ game.n_questions }}</strong> rounds played</p>
-                                    
-                                {% endif %}
-
-                                <p class="card-text">Success rate: <strong>{{ game.mean_score|floatformat:2 }} %</strong> </p>
-                                
-                            </div>
-                        </div>
-                    </a>
-            {% endfor %}
-        
+            <section class="container px-3">
+                <div class="row justify-content-center">
+                    {% for game in page_obj %}
+                        {% include "quiz/components/game_card.html" with game=game %}
+                    {% endfor %}
+                </div>
+            </section>
     </div>
 
     <nav aria-label="Games navigation">

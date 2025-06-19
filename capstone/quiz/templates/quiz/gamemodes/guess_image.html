@@ -26,20 +26,23 @@
                 
                 {% with game.current_round.number|add:"-1" as prev_round_number %}
                     {% if prev_round_number < 1 %}
-                        <button class="btn btn-secondary" style="height: 38px; padding: 6px 12px; visibility: hidden;">
-                            <i class="bi bi-arrow-left"></i>
+                        <button class="btn btn-secondary d-flex gap-2 align-items-center" style="height: 38px; padding: 6px 12px; visibility: hidden;">
+                            <i class="bi bi-caret-left"></i>
+                            Prev
                         </button>
                     {% else %}
-                        <button class="btn btn-secondary" onclick=window.location.href="{% url 'game_round_details' game.id prev_round_number %}" style="height: 38px; padding: 6px 12px;" title="Previous Round">
-                            <i class="bi bi-arrow-left"></i>
+                        <button class="btn btn-secondary d-flex gap-2 align-items-center" onclick=window.location.href="{% url 'game_round_details' game.id prev_round_number %}" style="height: 38px; padding: 6px 12px;" title="Previous Round">
+                            <i class="bi bi-caret-left"></i>
+                            Prev
                         </button>
                     {% endif %}
                 {% endwith %}
 
-                <h2>Round {{ game.current_round.number }}</h2>
+                <h2 class="mb-1">Round {{ game.current_round.number }}</h2>
                 
-                <button class="btn btn-secondary" style="height: 38px; padding: 6px 12px; visibility: hidden;">
-                    <i class="bi bi-arrow-right"></i>
+                <button class="btn btn-secondary d-flex gap-2 align-items-center" style="height: 38px; padding: 6px 12px; visibility: hidden;">
+                    <i class="bi bi-caret-right"></i>
+                    Next
                 </button>
                 
             </div>
@@ -50,15 +53,22 @@
 
             <div class="mb-3">
                 <!-- Buttons -->
-                <div class="d-flex justify-content-center gap-2 mb-3">
+                <div class="d-flex justify-content-center justify-content-between gap-2 mb-3" style="max-width:var(--max-width); margin: 0 auto;">
                     <form id="skipButtonForm" action="{% url 'skip_round' game.id %}" method="post" style="margin:0;">
                         {% csrf_token %}
-                        <button class="btn btn-secondary" type="submit" id="skipButton" style="height: 38px; padding: 6px 12px;">
+                        <button class="btn btn-secondary d-flex gap-2 align-items-center" type="submit" id="skipButton" style="height: 38px; padding: 6px 12px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-fast-forward" viewBox="0 0 16 16">
+                                <path d="M6.804 8 1 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C.713 12.69 0 12.345 0 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+                                <path d="M14.804 8 9 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C8.713 12.69 8 12.345 8 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+                            </svg> 
                             Skip
                         </button>
                     </form>
 
-                    <button class="btn btn-primary" type="submit" style="height: 38px; padding: 6px 12px;" form="guess-image-form" id="submit-guess-button">
+                    <button class="btn btn-primary d-flex gap-2 align-items-center" type="submit" style="height: 38px; padding: 6px 12px;" form="guess-image-form" id="submit-guess-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                        </svg>
                         Submit
                     </button>
                 </div>
@@ -87,26 +97,30 @@
                 
                 {% with round_detailed.number|add:"-1" as prev_round_number %}
                     {% if prev_round_number < 1 %}
-                        <button class="btn btn-secondary" style="height: 38px; padding: 6px 12px; visibility: hidden;">
-                            <i class="bi bi-arrow-left"></i>
+                        <button class="btn btn-secondary d-flex gap-2 align-items-center" style="height: 38px; padding: 6px 12px; visibility: hidden;">
+                            <i class="bi bi-caret-left"></i>
+                            Prev
                         </button>
                     {% else %}
-                        <button class="btn btn-secondary" onclick=window.location.href="{% url 'game_round_details' game.id prev_round_number %}" style="height: 38px; padding: 6px 12px;" title="Previous Round">
-                            <i class="bi bi-arrow-left"></i>
+                        <button class="btn btn-secondary d-flex gap-2 align-items-center" onclick=window.location.href="{% url 'game_round_details' game.id prev_round_number %}" style="height: 38px; padding: 6px 12px;" title="Previous Round">
+                            <i class="bi bi-caret-left"></i>
+                            Prev
                         </button>
                     {% endif %}
                 {% endwith %}
 
-                <h2>Round {{ round_detailed.number }}</h2>
+                <h2 class="mb-1">Round {{ round_detailed.number }}</h2>
                 
                 {% with round_detailed.number|add:"1" as next_round_number %}
                     {% if next_round_number > game.n_questions %}
                         <button class="btn btn-secondary" style="height: 38px; padding: 6px 12px; visibility: hidden;">
-                            <i class="bi bi-arrow-right"></i>
+                            <i class="bi bi-caret-right"></i>
+                            Next
                         </button>
                     {% else %}
-                        <button class="btn btn-secondary" onclick=window.location.href="{% url 'game_round_details' game.id next_round_number %}" style="height: 38px; padding: 6px 12px;" title="Next Round">
-                            <i class="bi bi-arrow-right"></i>
+                        <button class="btn btn-secondary d-flex gap-2 align-items-center" onclick=window.location.href="{% url 'game_round_details' game.id next_round_number %}" style="height: 38px; padding: 6px 12px;" title="Next Round">
+                            <i class="bi bi-caret-right"></i>
+                            Next
                         </button>
                     {% endif %}
                 {% endwith %}
