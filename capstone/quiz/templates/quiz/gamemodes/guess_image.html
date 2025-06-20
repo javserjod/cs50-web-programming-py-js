@@ -79,9 +79,9 @@
                     <div class="position-relative">
 
                         {% if game.mode == 'Cover Image' %}
-                            <input type="text" class="form-control" placeholder="Enter your answer here" id="guessCoverInput" name="user_input" required autocomplete="off" style="width: 100%;" data-game-source="{{ game.source }}">
+                            <input type="text" class="form-control text-center" placeholder="Enter and select the media title here" id="guessCoverInput" name="user_input" required autocomplete="off" style="width: 100%;" data-game-source="{{ game.source }}">
                         {% elif game.mode == 'Character Image' %}
-                            <input type="text" class="form-control" placeholder="Enter the character's name here" id="guessCharacterInput" name="user_input" required autocomplete="off" style="width: 100%;">
+                            <input type="text" class="form-control text-center" placeholder="Enter and select the character's name here" id="guessCharacterInput" name="user_input" required autocomplete="off" style="width: 100%;">
                         {% endif %}
 
                         <div id="suggestions" class="suggestion-box"></div>

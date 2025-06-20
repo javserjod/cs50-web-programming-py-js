@@ -72,6 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     averageScore
                     seasonYear
                     format
+                    favourites
+                    popularity
 
                 }
             }`;
@@ -108,14 +110,18 @@ document.addEventListener("DOMContentLoaded", () => {
             const score = media.averageScore;
             const year = media.seasonYear;
             const format = media.format;
-
+            const favourites = media.favourites;
+            const popularity = media.popularity;
+            
             // <li> only if available
             const genreItem = genreList ? `<li class="list-group-item"><strong>Genres:</strong> ${genreList}</li>` : "";
             const epsItem = eps != null ? `<li class="list-group-item"><strong>Episodes:</strong> ${eps}</li>` : "";
             const volsItem = vols != null ? `<li class="list-group-item"><strong>Volumes:</strong> ${vols}</li>` : "";
             const scoreItem = score != null ? `<li class="list-group-item"><strong>Average Score:</strong> ${score}/100</li>` : "";
-            const yearItem = year != null ? `<li class="list-group-item"><strong>Season Year:</strong> ${year}</li>` : "";
+            const yearItem = year != null ? `<li class="list-group-item"><strong>Year:</strong> ${year}</li>` : "";
             const formatItem = format ? `<li class="list-group-item"><strong>Format:</strong> ${format}</li>` : "";
+            const favouritesItem = favourites != null ? `<li class="list-group-item"><strong>Favourites:</strong> ${favourites}</li>` : "";
+            const popularityItem = popularity != null ? `<li class="list-group-item"><strong>Popularity:</strong> ${popularity}</li>` : "";
 
             // HTML
             const html = `
@@ -126,11 +132,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="card-body pb-0">
                         <p class="mb-3 text-muted" style="font-size: 0.95rem;">${desc}</p>
                         <ul class="list-group list-group-flush mb-3">
+                            ${yearItem}
                             ${genreItem}
                             ${epsItem}
                             ${volsItem}
                             ${scoreItem}
-                            ${yearItem}
+                            ${formatItem}
+                            ${favouritesItem}
+                            ${popularityItem}
                         </ul>
                     </div>
                 </div>

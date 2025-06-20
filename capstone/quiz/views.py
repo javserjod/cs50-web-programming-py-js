@@ -19,10 +19,14 @@ from django.template.loader import render_to_string
 from PIL import Image
 from io import BytesIO
 
-
-GAMES_PER_PAGE = 12  # Number of games to display per page in user's profile
-N_FETCHED_ELEMENTS = 50  # Number of media items to fetch from Anilist
-MAX_ATTEMPTS = 5     # Maximum attempts to fetch a valid image or character according to the parameters given by the user
+# Number of games to display per page in user's profile
+GAMES_PER_PAGE = 12
+# Number of media items to fetch from Anilist perPage. Maximum is 50.
+N_FETCHED_ELEMENTS = 50
+# Maximum attempts to fetch a valid image or character according to the parameters given by the user
+MAX_ATTEMPTS = 5
+# Cooldown time in seconds for fetching a new image or character
+FETCH_COOLDOWN_SECONDS = 5
 
 
 def home(request):
@@ -115,7 +119,8 @@ def game_configuration(request):
                 mode=request.POST.get("game_mode"),
                 genres=request.POST.getlist("game_genres"),
                 n_questions=int(
-                    request.POST.get("number_of_questions"))
+                    request.POST.get("number_of_questions")),
+                difficulty=int(request.POST.get("difficulty"))
             )
 
             for i in range(1, game.n_questions + 1):   # 1-based index
@@ -134,9 +139,6 @@ def game_configuration(request):
             })
 
 
-FETCH_COOLDOWN_SECONDS = 5
-
-
 @login_required
 def game_update(request, game_id):
     if request.method == "GET":
@@ -144,6 +146,7 @@ def game_update(request, game_id):
         game = get_object_or_404(Game, id=game_id, user=request.user)
         source = game.source
         genres = game.genres
+        difficulty = game.difficulty
         current_round = game.current_round()
 
         if game.mode in ["Cover Image", "Character Image"]:
@@ -177,7 +180,7 @@ def game_update(request, game_id):
                             if game.mode == "Cover Image":
                                 print("Fetching cover image...")
                                 result = get_cover_image(
-                                    source, genres, game)
+                                    source, genres, game, difficulty)
                             elif game.mode == "Character Image":
                                 print("Fetching character image...")
                                 result = get_character_image(
@@ -219,6 +222,10 @@ def game_update(request, game_id):
         current_round = game.current_round()
         current_round.user_answer = user_input
 
+        # if user tries to SUBMIT a round that is NOT ASSIGNED YET, redirect to game update (GET) (example: user goes back with browser and tries to submit an answer for an unassigned round - which answer has already being shown - although a past round is being displayed). if current round has been assigned but not revealed, will be counted as error, as it is not handled.
+        if current_round.correct_answer is None:
+            return HttpResponseRedirect(reverse("game_update", args=[game.id]))
+
         if user_input == current_round.correct_answer:
             current_round.state = 'CORRECT'
             current_round.save()  # save the round state
@@ -241,6 +248,9 @@ def skip_round(request, game_id):
     """
     game = get_object_or_404(Game, id=game_id, user=request.user)
     current_round = game.current_round()
+    # if user tries to SKIP a round that is NOT ASSIGNED YET, redirect to game update (GET) (example: user goes back with browser and tries to skip an answer for an unassigned round - which answer has already being shown - although a past round is being displayed). if current round has been assigned but not revealed, will be counted as error, as it is not handled.
+    if current_round.correct_answer is None:
+        return HttpResponseRedirect(reverse("game_update", args=[game.id]))
     current_round.state = 'WRONG'
     current_round.save()
 
@@ -297,17 +307,18 @@ def delete_game(request, game_id):
             return JsonResponse({"error": str(e)}, status=400)
 
 
-def get_cover_image(source, genres, game):
+def get_cover_image(source, genres, game, difficulty=5):
     """
     Fetch a random cover image from Anilist based on the source and genres.
     Returns the image URL and the title of the media (correct answer).
     """
     genres_list = genres_to_list(genres)
     random_genre = random.choice(genres_list)
+
     url = 'https://graphql.anilist.co'
     query = '''
-    query ($type: MediaType, $genre: [String], $perPage: Int) {
-        Page(perPage: $perPage) {
+    query ($page: Int, $perPage: Int, $type: MediaType, $genre: [String]) {
+        Page(page: $page, perPage: $perPage) {
             media(type: $type, genre_in: $genre, sort: POPULARITY_DESC) {
                 id
                 title {
@@ -317,14 +328,17 @@ def get_cover_image(source, genres, game):
                     large
                 }
                 favourites
+                popularity
             }
         }
     }
     '''
     variables = {
+        "page": random.randint(1, difficulty),
+        "perPage": N_FETCHED_ELEMENTS,
         "type": source.upper(),
         "genre": random_genre,
-        "perPage": N_FETCHED_ELEMENTS
+
     }
     try:
         response = requests.post(
