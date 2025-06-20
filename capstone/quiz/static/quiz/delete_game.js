@@ -16,8 +16,13 @@ function deleteHandler(event){
 
     const deleteButton = event.currentTarget;
     const gameId = deleteButton.dataset.gameId;
-    const recordCard = deleteButton.closest('.record-card');
-    const currentPage = new URLSearchParams(window.location.search).get("page") || 1;
+    const cardsContainer = document.querySelector('.card-row');
+    const allCols = Array.from(cardsContainer.children);
+    const cardToRemove = deleteButton.closest('.record-card');
+    const colToRemove = cardToRemove.closest('.card-col');
+    const colIndex = allCols.indexOf(colToRemove);
+
+    const currentPage = parseInt(new URLSearchParams(window.location.search).get("page") || "1");
 
     console.log("Deleted game with ID:", gameId);
 
@@ -35,26 +40,36 @@ function deleteHandler(event){
             return;
         }
 
-        recordCard.classList.add('delete-card-effect');
+        cardToRemove.classList.add('delete-card-effect');
 
          setTimeout(() => {
-            const row = document.querySelector('.card-row');
-            const cards = Array.from(row.children);
-            const index = cards.indexOf(recordCard);
-            recordCard.remove();
+            colToRemove.remove();   // remove whole column, containing the card
+            
+            const remainingCols = Array.from(cardsContainer.children).slice(colIndex);   // columns after the deleted one
 
-            // move next cards to one position before
-            for (let i = index + 1; i < cards.length; i++) {
-                row.children[i].before(cards[i]);
+            // remove all those later columns
+            for (let col of remainingCols) {
+                col.remove();
+            }
+            // and add them back to the end of the list to simulate a move effect
+            for (let col of remainingCols) {
+                cardsContainer.appendChild(col);
             }
 
-            // add new card from next page, if available
+            
+            // if card to add from the next page, add it to the end of the list
             if (data.html) {
-                const temp = document.createElement('div');
-                temp.innerHTML = data.html.trim();
-                const newCard = temp.firstChild;
-                row.appendChild(newCard);
-                newCard.querySelector('.delete-game-button').addEventListener('click', deleteHandler);
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = data.html.trim();
+                const newCol = tempDiv.firstElementChild;
+
+                cardsContainer.appendChild(newCol);
+
+                const newDeleteBtn = newCol.querySelector('.delete-game-button');
+                if (newDeleteBtn) {
+                    newDeleteBtn.addEventListener('click', deleteHandler);
+                }
+
             }
 
         }, 300);
