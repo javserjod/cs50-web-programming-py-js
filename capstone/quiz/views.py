@@ -176,12 +176,19 @@ def game_update(request, game_id):
                         try:
                             if game.mode == "Cover Image":
                                 print("Fetching cover image...")
-                                image_url, correct_answer, db_id = get_cover_image(
+                                result = get_cover_image(
                                     source, genres, game)
                             elif game.mode == "Character Image":
                                 print("Fetching character image...")
-                                image_url, correct_answer, db_id = get_character_image(
+                                result = get_character_image(
                                     source, genres, game)
+
+                            if result is None:
+                                raise ValueError(
+                                    "No valid cover image found.")
+                            else:
+                                image_url, correct_answer, db_id = result
+
                         except ValueError as e:
                             print(f"Error fetching image: {e}")
 
@@ -324,25 +331,33 @@ def get_cover_image(source, genres, game):
         "genre": random_genre,
         "perPage": N_FETCHED_ELEMENTS
     }
-    response = requests.post(
-        url, json={"query": query, "variables": variables})
-    data = response.json()
-    media_list = data["data"]["Page"]["media"]
+    try:
+        response = requests.post(
+            url, json={"query": query, "variables": variables})
+        response.raise_for_status()  # Raise an error for bad responses
+        data = response.json()
 
-    if not media_list:
+        media_list = data.get("data", {}).get("Page", {}).get("media", None)
+
+        if not media_list:
+            print("Empty or missing media list. Response:", data)
+            return None
+
+        for _ in range(MAX_ATTEMPTS):
+            random_media = random.choice(
+                media_list)   # Get a random media item
+            # random media ordered by popularity. Difficulty could be leveraged with this.
+            img = random_media.get("coverImage", {}).get("large")
+            title = random_media.get("title", {}).get("romaji")
+            id = random_media.get("id")
+            if img and title and (not game.used_id(id)):
+                return (img, title, id)
+
+        raise ValueError("No valid media found after maximum attempts.")
+
+    except (KeyError, TypeError, requests.RequestException, ValueError) as e:
+        print(f"Error fetching or parsing Anilist data: {e}")
         return None
-
-    for _ in range(MAX_ATTEMPTS):
-        random_media = random.choice(
-            media_list)   # Get a random media item
-        # random media ordered by popularity. Difficulty could be leveraged with this.
-        img = random_media.get("coverImage", {}).get("large")
-        title = random_media.get("title", {}).get("romaji")
-        id = random_media.get("id")
-        if img and title and (not game.used_id(id)):
-            return (img, title, id)
-
-    raise ValueError("No valid media found after maximum attempts.")
 
 
 def get_character_image(source, genres, game):
@@ -375,39 +390,44 @@ def get_character_image(source, genres, game):
         }
     }
     '''
-
     variables = {
         "type": source.upper(),  # Should be "ANIME" or "MANGA"
         "genre": random_genre,
         "perPage": N_FETCHED_ELEMENTS
     }
 
-    response = requests.post(
-        url, json={"query": query, "variables": variables})
-    data = response.json()
+    try:
+        response = requests.post(
+            url, json={"query": query, "variables": variables})
+        response.raise_for_status()  # Raise an error for bad responses
+        data = response.json()
+        media_list = data.get("data", {}).get("Page", {}).get("media", [])
 
-    media_list = data.get("data", {}).get("Page", {}).get("media", [])
+        if not media_list:
+            print("Empty or missing media list. Response:", data)
+            return None
 
-    if not media_list:
+        for _ in range(MAX_ATTEMPTS):
+            media = random.choice(media_list)  # get a random media item
+            # print(media)
+            characters = media.get("characters", {}).get("nodes", [])
+            if not characters:
+                continue
+            # get a random character from the media and its info
+            character = random.choice(characters)
+            img = character.get("image", {}).get("large")
+            name = character.get("name", {}).get("full")
+            id = character.get("id")
+            # check image is not a placeholder image
+            if img and (not is_placeholder_image(img)):
+                if name and (not game.used_id(id)):
+                    return (img, name, id)
+
+        raise ValueError("No valid character found after maximum attempts.")
+
+    except (KeyError, TypeError, requests.RequestException, ValueError) as e:
+        print(f"Error fetching or parsing Anilist data: {e}")
         return None
-
-    for _ in range(MAX_ATTEMPTS):
-        media = random.choice(media_list)  # get a random media item
-        # print(media)
-        characters = media.get("characters", {}).get("nodes", [])
-        if not characters:
-            continue
-        # get a random character from the media and its info
-        character = random.choice(characters)
-        img = character.get("image", {}).get("large")
-        name = character.get("name", {}).get("full")
-        id = character.get("id")
-        # check image is not a placeholder image
-        if img and (not is_placeholder_image(img)):
-            if name and (not game.used_id(id)):
-                return (img, name, id)
-
-    raise ValueError("No valid character found after maximum attempts.")
 
 
 def is_placeholder_image(image_url, placeholder_mean_color=(39, 50, 78), tol=5):
@@ -424,11 +444,11 @@ def is_placeholder_image(image_url, placeholder_mean_color=(39, 50, 78), tol=5):
         mean_color = np.array(img).mean(axis=(0, 1))
         mean_color = np.array(mean_color)
         placeholder_mean_color = np.array(placeholder_mean_color)
-
-        print(f"Mean color of the image: {mean_color}")
-        print(f"Placeholder mean color: {placeholder_mean_color}")
+        # print(f"Mean color of the image: {mean_color}")
+        # print(f"Placeholder mean color: {placeholder_mean_color}")
         distance = np.linalg.norm(mean_color - placeholder_mean_color)
-        print(f"Distance from placeholder color: {distance}")
+        print(f"Distance from placeholder image mean color: {distance}")
+
         return distance < tol
 
     except Exception as e:

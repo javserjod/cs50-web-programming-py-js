@@ -29,6 +29,8 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (gamemode === "Cover Image") {
             fetchAnswerMedia(correctAnswerId)
+            .then(data => {
+                renderAnswerMedia(data)})
             .catch(error => {
                 console.error("Error fetching media data:", error);
                 const container = document.getElementById("round-details-container");
@@ -38,11 +40,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 `;
             })
-            .then(data => {
-                renderAnswerMedia(data)})
 
         } else if (gamemode === "Character Image") {
             fetchAnswerCharacter(correctAnswerId)
+            .then(data => {
+                renderAnswerCharacter(data)})
             .catch(error => {
                 console.error("Error fetching character data:", error);
                 const container = document.getElementById("round-details-container");
@@ -52,8 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 `;
             })
-            .then(data => {
-                renderAnswerCharacter(data)})
         }
 
         async function fetchAnswerMedia(correctAnswerId) {
