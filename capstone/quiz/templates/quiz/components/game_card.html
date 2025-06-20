@@ -21,13 +21,14 @@
             </div>
 
             <div class="card-body">
-                <p class="card-text">Gamemode: {{ game.mode }}</p>
-                <p class="card-text">Created on: {{ game.date_played|date:"Y-m-d" }}</p>
-
+                <p class="card-text">Mode: {{ game.mode }}</p>
+                <p class="card-text">Difficulty: {{ game.difficulty }}</p>
+                <!--<p class="card-text">Created on: {{ game.date_played|date:"Y-m-d" }}</p>-->
+                <hr>
                 {% if game.is_finished %}
-                <p class="card-text">Status: <span>Finished</span></p>
+                <p class="card-text"><strong>Finished</strong>: {{ game.n_questions }}/{{ game.n_questions }}</p>
                 {% else %}
-                <p class="card-text">Status: <strong>{{ game.current_round.number|add:"-1" }}/{{ game.n_questions }}</strong> rounds played</p>
+                <p class="card-text">Status: <strong>{{ game.current_round.number|add:"-1" }}/{{ game.n_questions }}</strong></p>
                 {% endif %}
 
                 <p class="card-text">Success rate: <strong>{{ game.mean_score|floatformat:2 }} %</strong></p>

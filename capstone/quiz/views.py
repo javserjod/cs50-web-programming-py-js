@@ -21,12 +21,21 @@ from io import BytesIO
 
 # Number of games to display per page in user's profile
 GAMES_PER_PAGE = 12
+
 # Number of media items to fetch from Anilist perPage. Maximum is 50.
 N_FETCHED_ELEMENTS = 50
-# Maximum attempts to fetch a valid image or character according to the parameters given by the user
-MAX_ATTEMPTS = 5
+
+# Maximum attempts to fetch a valid page
+MAX_ATTEMPTS_PAGES = 5
+
+# Maximum attempts to fetch a valid image or character according to the parameters given by the user FROM A CHOOSEN PAGE
+MAX_ATTEMPTS_FROM_PAGE = 5
+
 # Cooldown time in seconds for fetching a new image or character
 FETCH_COOLDOWN_SECONDS = 5
+
+# Value to adjust the position of the pages that may be fetched from Anilist. The bigger, later pages (less popular) will have more probability to be fetched. Less than 7 for securing a page with enough results.
+DIFFICULTY_RATIO = 3
 
 
 def home(request):
@@ -174,7 +183,7 @@ def game_update(request, game_id):
                     })
                 else:
                     image_url, correct_answer, db_id = None, None, None
-                    while all([image_url is None, correct_answer is None, db_id is None]):
+                    for _ in range(MAX_ATTEMPTS_PAGES):
                         # sometimes errors occur when fetching images from Anilist (unknown cause)
                         try:
                             if game.mode == "Cover Image":
@@ -191,9 +200,16 @@ def game_update(request, game_id):
                                     "No valid cover image found.")
                             else:
                                 image_url, correct_answer, db_id = result
+                                break
 
                         except ValueError as e:
                             print(f"Error fetching image: {e}")
+
+                    if any([image_url is None, correct_answer is None, db_id is None]):
+                        game.delete()  # delete the game if no valid image found
+                        # no valid round found after maximum attempts
+                        print("No valid image found after maximum attempts.")
+                        return render(request, "quiz/game_configuration.html", {"error_message": "No valid image found. Game cancelled and deleted. Please try again with less restrictive parameters."})
 
                     modified_image = image_random_modify(image_url)
 
@@ -307,6 +323,48 @@ def delete_game(request, game_id):
             return JsonResponse({"error": str(e)}, status=400)
 
 
+def get_number_of_pages(source, random_genre, game):
+    # not used because always returns 100. Anilist API also say to not rely on this value...
+    """
+    Fetch the number of pages available for the given source, genre and elements per page.
+    Returns the number of pages, needed to adjust difficulty.
+    """
+    if game.mode == "Cover Image":
+
+        url = 'https://graphql.anilist.co'
+        query = '''
+        query ($page: Int, $perPage: Int, $type: MediaType, $genre: [String]) {
+            Page(page: $page, perPage: $perPage) {
+                pageInfo {
+                    lastPage
+                }
+                media(type: $type, genre_in: $genre) {
+                    id
+                }
+            }
+            
+        }
+        '''
+        variables = {
+            "page": 1,  # any page is fine
+            "perPage": N_FETCHED_ELEMENTS,
+            "type": source.upper(),
+            "genre": random_genre,
+        }
+        try:
+            response = requests.post(
+                url, json={"query": query, "variables": variables})
+            response.raise_for_status()  # Raise an error for bad responses
+            data = response.json()
+            print(f"Response data: {data}")
+            return data.get("data", {}).get("Page", {}).get(
+                "pageInfo", {}).get("lastPage", None)
+
+        except (KeyError, TypeError, requests.RequestException) as e:
+            print(f"Error fetching or parsing Anilist data: {e}")
+            return None
+
+
 def get_cover_image(source, genres, game, difficulty=5):
     """
     Fetch a random cover image from Anilist based on the source and genres.
@@ -314,11 +372,15 @@ def get_cover_image(source, genres, game, difficulty=5):
     """
     genres_list = genres_to_list(genres)
     random_genre = random.choice(genres_list)
+    random_page = random.randint(1, difficulty * DIFFICULTY_RATIO)
 
     url = 'https://graphql.anilist.co'
     query = '''
     query ($page: Int, $perPage: Int, $type: MediaType, $genre: [String]) {
         Page(page: $page, perPage: $perPage) {
+            pageInfo {
+                lastPage
+            }
             media(type: $type, genre_in: $genre, sort: POPULARITY_DESC) {
                 id
                 title {
@@ -334,7 +396,7 @@ def get_cover_image(source, genres, game, difficulty=5):
     }
     '''
     variables = {
-        "page": random.randint(1, difficulty),
+        "page": random_page,
         "perPage": N_FETCHED_ELEMENTS,
         "type": source.upper(),
         "genre": random_genre,
@@ -352,7 +414,7 @@ def get_cover_image(source, genres, game, difficulty=5):
             print("Empty or missing media list. Response:", data)
             return None
 
-        for _ in range(MAX_ATTEMPTS):
+        for _ in range(MAX_ATTEMPTS_FROM_PAGE):
             random_media = random.choice(
                 media_list)   # Get a random media item
             # random media ordered by popularity. Difficulty could be leveraged with this.
@@ -416,7 +478,7 @@ def get_character_image(source, genres, game):
             print("Empty or missing media list. Response:", data)
             return None
 
-        for _ in range(MAX_ATTEMPTS):
+        for _ in range(MAX_ATTEMPTS_FROM_PAGE):
             media = random.choice(media_list)  # get a random media item
             # print(media)
             characters = media.get("characters", {}).get("nodes", [])
