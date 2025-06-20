@@ -16,6 +16,9 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import timedelta
 from django.template.loader import render_to_string
+from PIL import Image
+from io import BytesIO
+
 
 GAMES_PER_PAGE = 12  # Number of games to display per page in user's profile
 N_FETCHED_ELEMENTS = 50  # Number of media items to fetch from Anilist
@@ -169,14 +172,18 @@ def game_update(request, game_id):
                 else:
                     image_url, correct_answer, db_id = None, None, None
                     while all([image_url is None, correct_answer is None, db_id is None]):
-                        if game.mode == "Cover Image":
-                            print("Fetching cover image...")
-                            image_url, correct_answer, db_id = get_cover_image(
-                                source, genres, game)
-                        elif game.mode == "Character Image":
-                            print("Fetching character image...")
-                            image_url, correct_answer, db_id = get_character_image(
-                                source, genres, game)
+                        # sometimes errors occur when fetching images from Anilist (unknown cause)
+                        try:
+                            if game.mode == "Cover Image":
+                                print("Fetching cover image...")
+                                image_url, correct_answer, db_id = get_cover_image(
+                                    source, genres, game)
+                            elif game.mode == "Character Image":
+                                print("Fetching character image...")
+                                image_url, correct_answer, db_id = get_character_image(
+                                    source, genres, game)
+                        except ValueError as e:
+                            print(f"Error fetching image: {e}")
 
                     modified_image = image_random_modify(image_url)
 
@@ -259,47 +266,33 @@ def delete_game(request, game_id):
     if request.method == "POST":
         """
         Delete a game instance and all its associated rounds.
+        If the game is deleted successfully, return the next game card to be displayed in that page.
         """
         try:
             print(f"Deleting game with ID: {game_id}")
             game = get_object_or_404(Game, id=game_id, user=request.user)
             game.delete()  # this will also delete all associated rounds
-        except:
-            return JsonResponse({"error": "Game not found."}, status=404)
 
-        user = request.user
-        all_games = Game.objects.filter(
-            user=request.user).order_by('-date_played')
+            current_page = request.GET.get("page", 1)   # parameter in URL
+            all_games = Game.objects.filter(
+                user=request.user).order_by('-date_played')
+            print(f"Total games after deletion: {len(all_games)}")
+            current_page_last_index = current_page * GAMES_PER_PAGE - 1
 
-        paginator = Paginator(all_games, GAMES_PER_PAGE)
-        page_number = request.GET.get("page")
-        page_obj = paginator.get_page(page_number)
+            # if there are more games to show from the next page
+            if current_page_last_index < len(all_games):
+                next_game = all_games[current_page_last_index]
+                print("Rendering to string")
+                rendered = render_to_string(
+                    "quiz/components/game_card.html", {"game": next_game}, request)
+                print("Sending next game card after deletion.")
+                return JsonResponse({"html": rendered, "id": next_game.id}, status=200)
 
-        html = render_to_string("quiz/profile.html", {
-            "user": user,
-            "page_obj": page_obj,
-        })
+            print("?? error?? ")
+            return JsonResponse({"html": None}, status=200)
 
-        return JsonResponse({"html": html})
-        all_games = Game.objects.filter(
-            user=request.user).order_by('-date_played')
-
-        page_number = int(request.GET.get('page', 1))
-
-        paginator = Paginator(all_games, GAMES_PER_PAGE)
-
-        try:
-            next_page = paginator.page(page_number + 1)
-            next_game = next_page.object_list[0]
-        except:
-            next_game = None
-
-        if next_game:
-            card_html = render_to_string(
-                'quiz/components/game_card.html', {"game": next_game, "user": request.user})
-            return JsonResponse({"html": card_html})
-        else:
-            return JsonResponse({"html": None})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
 
 
 def get_cover_image(source, genres, game):
@@ -409,11 +402,38 @@ def get_character_image(source, genres, game):
         img = character.get("image", {}).get("large")
         name = character.get("name", {}).get("full")
         id = character.get("id")
-
-        if img and name and (not game.used_id(id)):
-            return (img, name, id)
+        # check image is not a placeholder image
+        if img and (not is_placeholder_image(img)):
+            if name and (not game.used_id(id)):
+                return (img, name, id)
 
     raise ValueError("No valid character found after maximum attempts.")
+
+
+def is_placeholder_image(image_url, placeholder_mean_color=(39, 50, 78), tol=5):
+    """
+    Check if the image URL is a placeholder image.
+    Returns True if it is a placeholder, False otherwise.
+    tol is the tolerance for the mean color distance.
+    The default placeholder mean color is a dark blue (39, 50, 78).
+    """
+    try:
+        response = requests.get(image_url)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content)).convert("RGB")
+        mean_color = np.array(img).mean(axis=(0, 1))
+        mean_color = np.array(mean_color)
+        placeholder_mean_color = np.array(placeholder_mean_color)
+
+        print(f"Mean color of the image: {mean_color}")
+        print(f"Placeholder mean color: {placeholder_mean_color}")
+        distance = np.linalg.norm(mean_color - placeholder_mean_color)
+        print(f"Distance from placeholder color: {distance}")
+        return distance < tol
+
+    except Exception as e:
+        print(f"Error checking placeholder image: {e}")
+        return False
 
 
 def image_random_modify(image_url):

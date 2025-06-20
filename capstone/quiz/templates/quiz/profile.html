@@ -11,7 +11,7 @@
             </div>
         {% else %}
             <section class="container px-3">
-                <div class="row justify-content-center">
+                <div class="card-row row justify-content-start">
                     {% for game in page_obj %}
                         {% include "quiz/components/game_card.html" with game=game %}
                     {% endfor %}
