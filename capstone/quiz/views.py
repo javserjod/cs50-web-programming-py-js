@@ -18,12 +18,13 @@ from datetime import timedelta
 from django.template.loader import render_to_string
 from PIL import Image
 from io import BytesIO
+import json
 
 # Number of games to display per page in user's profile
 GAMES_PER_PAGE = 12
 
-# Number of media items to fetch from Anilist perPage. Maximum is 50.
-N_FETCHED_ELEMENTS = 50
+# Number of media items to fetch from Anilist perPage. Maximum is 50. Try to reduce due to the CORS error when fetching images.
+N_FETCHED_ELEMENTS = 10
 
 # Maximum attempts to fetch a valid page
 MAX_ATTEMPTS_PAGES = 5
@@ -36,6 +37,9 @@ FETCH_COOLDOWN_SECONDS = 5
 
 # Value to adjust the position of the pages that may be fetched from Anilist. The bigger, later pages (less popular) will have more probability to be fetched. Less than 7 for securing a page with enough results.
 DIFFICULTY_RATIO = 3
+
+# Value to adjust the possible characters prone to be selected, after ordering by favourites inside of the media. This value multiplies the difficulty level to get a maximum index to slice the media list, creating a range of possible characters to be selected. The bigger, the more characters will be available to be selected. Less than 5 for securing a character with enough results.
+DIFFICULTY_RATIO_CHARACTERS = 2
 
 
 def home(request):
@@ -193,7 +197,7 @@ def game_update(request, game_id):
                             elif game.mode == "Character Image":
                                 print("Fetching character image...")
                                 result = get_character_image(
-                                    source, genres, game)
+                                    source, genres, game, difficulty)
 
                             if result is None:
                                 raise ValueError(
@@ -365,7 +369,7 @@ def get_number_of_pages(source, random_genre, game):
             return None
 
 
-def get_cover_image(source, genres, game, difficulty=5):
+def get_cover_image(source, genres, game, difficulty):
     """
     Fetch a random cover image from Anilist based on the source and genres.
     Returns the image URL and the title of the media (correct answer).
@@ -378,9 +382,6 @@ def get_cover_image(source, genres, game, difficulty=5):
     query = '''
     query ($page: Int, $perPage: Int, $type: MediaType, $genre: [String]) {
         Page(page: $page, perPage: $perPage) {
-            pageInfo {
-                lastPage
-            }
             media(type: $type, genre_in: $genre, sort: POPULARITY_DESC) {
                 id
                 title {
@@ -389,8 +390,6 @@ def get_cover_image(source, genres, game, difficulty=5):
                 coverImage {
                     large
                 }
-                favourites
-                popularity
             }
         }
     }
@@ -398,7 +397,7 @@ def get_cover_image(source, genres, game, difficulty=5):
     variables = {
         "page": random_page,
         "perPage": N_FETCHED_ELEMENTS,
-        "type": source.upper(),
+        "type": source.upper(),   # "ANIME" or "MANGA"
         "genre": random_genre,
 
     }
@@ -431,21 +430,22 @@ def get_cover_image(source, genres, game, difficulty=5):
         return None
 
 
-def get_character_image(source, genres, game):
+def get_character_image(source, genres, game, difficulty):
     """
-    Fetch a random character image from Anilist based on the source and genres.
-    Returns the image URL of a character from a random media item, the character's name (correct answer) and its ID in AniList for future use.
+    Fetch a random character image from a random media from Anilist based on the source, random genre from the selected and chosen difficulty.
+    Returns the image URL of a character from a random media item, the character's name (correct answer), its ID in AniList for future use and other additional info.
     """
     genres_list = genres_to_list(genres)
     random_genre = random.choice(genres_list)
+    random_page = random.randint(1, difficulty * DIFFICULTY_RATIO)
 
     url = "https://graphql.anilist.co"
     query = '''
-    query ($type: MediaType, $genre: [String], $perPage: Int) {
-        Page(perPage: $perPage) {
+    query ($page: Int, $type: MediaType, $genre: [String], $perPage: Int) {
+        Page(page: $page, perPage: $perPage) {
             media(type: $type, genre_in: $genre, sort: POPULARITY_DESC) {
                 favourites
-                characters(sort: ROLE) {
+                characters(sort: FAVOURITES_DESC) {
                     nodes {
                         id
                         name {
@@ -462,9 +462,10 @@ def get_character_image(source, genres, game):
     }
     '''
     variables = {
-        "type": source.upper(),  # Should be "ANIME" or "MANGA"
+        "page": random_page,
+        "perPage": N_FETCHED_ELEMENTS,
+        "type": source.upper(),  # "ANIME" or "MANGA"
         "genre": random_genre,
-        "perPage": N_FETCHED_ELEMENTS
     }
 
     try:
@@ -479,19 +480,24 @@ def get_character_image(source, genres, game):
             return None
 
         for _ in range(MAX_ATTEMPTS_FROM_PAGE):
-            media = random.choice(media_list)  # get a random media item
+            media = random.choice(media_list)
             # print(media)
             characters = media.get("characters", {}).get("nodes", [])
             if not characters:
                 continue
-            # get a random character from the media and its info
-            character = random.choice(characters)
+            # get a random character from the media and its info. slice characters according to difficulty and character ratio, then select random element (character)
+            character = random.choice(
+                characters[: difficulty * DIFFICULTY_RATIO_CHARACTERS])
             img = character.get("image", {}).get("large")
             name = character.get("name", {}).get("full")
             id = character.get("id")
             # check image is not a placeholder image
             if img and (not is_placeholder_image(img)):
                 if name and (not game.used_id(id)):
+                    print(f"Selected character: {name} with ID: {id}")
+                    # favourites
+                    favourites = character.get("favourites", 0)
+                    print(f"Favourites: {favourites}")
                     return (img, name, id)
 
         raise ValueError("No valid character found after maximum attempts.")
@@ -499,6 +505,83 @@ def get_character_image(source, genres, game):
     except (KeyError, TypeError, requests.RequestException, ValueError) as e:
         print(f"Error fetching or parsing Anilist data: {e}")
         return None
+
+
+@login_required
+def get_anilist_data(request):
+    ''' 
+    Initially implemented in JS to fetch additional info from Anilist API, but CORS policy caused issues. Moved to Django view.
+    Fetch additional info from Anilist API based on the media ID.
+    Returns a JSON response with the media title, description, and other relevant info.
+    '''
+    if request.method != 'POST':
+        return JsonResponse({"error": "Only POST allowed."}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        query_type = data.get("type")
+        anilist_id = data.get("id")
+
+        if query_type == "Media":
+            query = '''
+            query ($id: Int) {
+                Media(id: $id) {
+                    id
+                    title {
+                        romaji
+                        english
+                    }
+                    description
+                    episodes
+                    volumes
+                    genres
+                    averageScore
+                    seasonYear
+                    format
+                    favourites
+                    popularity
+                }
+            }'''
+        elif query_type == "Character":
+            query = '''
+            query ($id: Int) {
+                Character(id: $id) {
+                    name {
+                        full
+                        alternative
+                    }
+                    description
+                    media(perPage: 30, sort: POPULARITY_DESC) {
+                        edges {
+                            characterRole
+                            node {
+                                id
+                                title {
+                                    romaji
+                                    english
+                                }
+                                type
+                                format
+                                coverImage {
+                                    large
+                                }
+                            }
+                        }
+                    }
+                }
+            }'''
+        else:
+            return JsonResponse({"error": "Invalid type."}, status=400)
+
+        response = requests.post(
+            'https://graphql.anilist.co/',
+            json={'query': query, 'variables': {'id': anilist_id}},
+            headers={'Content-Type': 'application/json'}
+        )
+        return JsonResponse(response.json())
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 def is_placeholder_image(image_url, placeholder_mean_color=(39, 50, 78), tol=5):

@@ -14,5 +14,6 @@ urlpatterns = [
     path("game/<int:game_id>/<int:round_number>",
          views.game_round_details, name="game_round_details"),
     path("delete_game/<int:game_id>", views.delete_game, name="delete_game"),
+    path("get_anilist_data/", views.get_anilist_data, name='get_anilist_data')
 
 ]

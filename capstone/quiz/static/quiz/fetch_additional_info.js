@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
 
     const image = document.getElementById("image-original");
     
@@ -57,41 +58,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         async function fetchAnswerMedia(correctAnswerId) {
-            const query = `
-            query ($id: Int) {
-                Media(id: $id) {
-                    id
-                    title {
-                        romaji
-                        english
-                    }
-                    description
-                    episodes
-                    volumes
-                    genres
-                    averageScore
-                    seasonYear
-                    format
-                    favourites
-                    popularity
-
-                }
-            }`;
-
-            const variables = {
-                "id": correctAnswerId,
-            };
 
             try {
-                const res = await fetch("https://graphql.anilist.co", {
+                const res = await fetch("/get_anilist_data/", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ query, variables })
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken
+                    },
+                    body: JSON.stringify({ 
+                        type: "Media",
+                        id: correctAnswerId,
+                    })
                 });
 
                 const data = await res.json();
                 return data;
-            }catch (error) {
+            } catch (error) {
                 console.error("Error fetching media answer additional info:", error);
             }
         }
@@ -157,43 +140,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
         
         async function fetchAnswerCharacter(correctAnswerId) {
-            const query = `
-                query ($id: Int) {
-                    Character(id: $id) {
-                        name {
-                            full
-                            alternative
-                        }
-                        description
-                        media(perPage: 30, sort: POPULARITY_DESC) {
-                            edges {
-                                characterRole
-                                node {
-                                    id
-                                    title {
-                                        romaji
-                                        english
-                                    }
-                                    type
-                                    format
-                                    coverImage {
-                                        large
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }`;
-
-            const variables = {
-                "id": correctAnswerId,
-            };
 
             try {
-                const res = await fetch("https://graphql.anilist.co", {
+                const res = await fetch("/get_anilist_data/", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ query, variables })
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken  
+                    },
+                    body: JSON.stringify({ 
+                        type: "Character",
+                        id: correctAnswerId,
+                    })
                 });
                 
                 const data = await res.json();
