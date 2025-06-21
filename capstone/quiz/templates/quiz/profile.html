@@ -3,7 +3,7 @@
 {% block body %}
     <div class="container mt-5 profile-container d-flex flex-column align-items-center">
          
-        <h1 class="text-center mb-4">{{ user.username }}'s Game History </h1>
+        <h1 class="text-center mb-4">{{ user.username }}'s Own Game History </h1>
         
         {% if page_obj.paginator.count == 0 or user.games.count == 0 %}
             <div class="alert alert-info text-center" role="alert">

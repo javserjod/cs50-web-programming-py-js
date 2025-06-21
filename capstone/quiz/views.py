@@ -478,7 +478,7 @@ def get_character_image(source, genres, game, difficulty):
 
 @login_required
 def get_anilist_data(request):
-    ''' 
+    '''
     Initially implemented in JS to fetch additional info from Anilist API, but CORS policy caused issues. Moved to Django view.
     Fetch additional info from Anilist API based on the media ID.
     Returns a JSON response with the media title, description, and other relevant info.
@@ -559,8 +559,27 @@ def get_anilist_data(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
-# other utility functions
+def daily_challenge_list(request):
+    """
+    Render the daily challenge list page.
+    This page will show the daily challenges available for the user.
+    """
+    if request.method == "GET":
+        # Fetch daily challenges from the database or any other source
+        # For now, just render an empty page
+        return render(request, "quiz/daily_challenge_list.html")
+    else:
+        return HttpResponse(status=405)  # Method not allowed
 
+
+def daily_challenge(request, daily_game_number):
+    if request.method == "GET":
+        return HttpResponse(200)
+
+
+# other utility functions
+#
+# ----------------------------------------------
 def is_placeholder_image(image_url, placeholder_mean_color=(39, 50, 78), tol=5):
     """
     Check if the image URL is a placeholder image.
