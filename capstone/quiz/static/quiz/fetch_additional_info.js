@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("other-name").textContent = media.title.english;
             }
             
-            const desc = media.description || "No description available.";
+            const desc = media.description.replace(/(<br\s*\/?>\s*){3,}/gi, '<br><br>') || "No description available.";  // Replace multiple <br> with two <br>
             const genreList = media.genres?.join(", ") || null;
             const eps = media.episodes;
             const vols = media.volumes;
@@ -95,8 +95,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const format = media.format;
             const favourites = media.favourites;
             const popularity = media.popularity;
+            const siteUrl = media.siteUrl;
             
             // <li> only if available
+            const descItem = desc ? `<li class="list-group-item mb-0 "><strong>Description:</strong> ${desc}</li>` : "No description available.";
             const genreItem = genreList ? `<li class="list-group-item"><strong>Genres:</strong> ${genreList}</li>` : "";
             const epsItem = eps != null ? `<li class="list-group-item"><strong>Episodes:</strong> ${eps}</li>` : "";
             const volsItem = vols != null ? `<li class="list-group-item"><strong>Volumes:</strong> ${vols}</li>` : "";
@@ -109,18 +111,20 @@ document.addEventListener("DOMContentLoaded", () => {
             // HTML
             const html = `
                 <div class="card my-4 shadow-sm" style="max-width: 700px; margin: 0 auto;">
-                    <div class="card-header bg-secondary text-white">
-                        <h5 class="mb-0">Additional info</h5>
-                    </div>
+                    <a href="${siteUrl}" target="_blank" class="text-white text-decoration-none">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">Additional info <i class="bi bi-box-arrow-up-right px-1"></i> </h5>  
+                        </div>
+                    </a>
                     <div class="card-body pb-0">
-                        <p class="mb-3 text-muted" style="font-size: 0.95rem;">${desc}</p>
                         <ul class="list-group list-group-flush mb-3">
+                            ${descItem}
                             ${yearItem}
                             ${genreItem}
-                            ${epsItem}
-                            ${volsItem}
                             ${scoreItem}
                             ${formatItem}
+                            ${epsItem}
+                            ${volsItem}
                             ${favouritesItem}
                             ${popularityItem}
                         </ul>
@@ -174,24 +178,56 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             //console.log("Character data:", character);
             
-            const desc = character.description || "No description available.";
+            const desc = character.description.replace(/(<br\s*\/?>\s*){3,}/gi, '<br><br>') || "No description available.";  // Replace multiple <br> with two <br>
+            const favourites = character.favourites;
+            const gender = character.gender;
+            const age = character.age;
+            const siteUrl = character.siteUrl;
+
+            // <li> only if available
+            const descItem = desc ? `<li class="list-group-item mb-0"> ${desc}</li>` : "No description available.";
+            const favouritesItem = favourites != null ? `<li class="list-group-item"><strong>Favourites:</strong> ${favourites}</li>` : "";
+            const genderItem = gender ? `<li class="list-group-item"><strong>Gender:</strong> ${gender}</li>` : "";
+            const ageItem = age ? `<li class="list-group-item"><strong>Age:</strong> ${age}</li>` : "";
 
             // HTML
             const html = `
                 <div class="card my-4 shadow-sm" style="max-width: 700px; margin: 0 auto;">
-                    <div class="card-header bg-secondary text-white">
-                        <h5 class="mb-0">Additional info</h5>
-                    </div>
+                    <a href="${siteUrl}" target="_blank" class="text-white text-decoration-none">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">Additional info <i class="bi bi-box-arrow-up-right px-1"></i> </h5>  
+                        </div>
+                    </a>
                     <div class="card-body pb-0">
-                        <p class="mb-3 text-muted" style="font-size: 0.95rem;">${desc}</p>
+                        <ul class="list-group list-group-flush mb-3">
+                            ${descItem}
+                            ${genderItem}
+                            ${ageItem}
+                            ${favouritesItem}
+                        </ul>
                         
                     </div>
                 </div>
             `;
 
+            
             const infoContainer = document.getElementById("round-details-container");
-            infoContainer.innerHTML = html;
+            infoContainer.innerHTML = html;   // add HTML to the container
 
+            // spoiler hiding and showing functionality
+            document.querySelectorAll('#round-details-container span.markdown_spoiler').forEach(spoiler => {
+                spoiler.addEventListener('click', () => {
+                    spoiler.classList.toggle('markdown_spoiler');
+                });
+                
+                // open links in new tab
+                spoiler.querySelectorAll('a').forEach(link => {
+                    link.setAttribute('target', '_blank');
+                })
+            });
+
+
+            // Character roles
             const characterParticipationsContainer = document.getElementById("character-participations");
 
             mediaEdges.forEach(edge => {
@@ -200,16 +236,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 const role = edge.characterRole;
                 const format = edge.node.format;
                 const cover = edge.node.coverImage.large;
+                const seasonYear = edge.node.seasonYear ? edge.node.seasonYear : "Unknown Year";
+                const siteUrl = edge.node.siteUrl;
 
                 const mediaItem = document.createElement("div");
-                mediaItem.className = "card mb-3 p-2 d-flex flex-column";
-                mediaItem.style.width = "200px";
+                mediaItem.className = "card mb-3 d-flex flex-column";
+                mediaItem.style.maxWidth = "200px";
                 mediaItem.innerHTML = `
-                    <img src="${cover}" alt="${titleRomaji}" class="card-img-top mx-auto d-block" style="width: 100%; height: 250px; object-fit: fill;"> 
+                <a href="${siteUrl}" target="_blank" class="stretched-link text-decoration-none text-dark d-flex flex-column h-100">
+                    <img src="${cover}" alt="${titleRomaji}" class="card-img-top mx-auto mb-1 d-block" style="width: 100%; height: 250px; object-fit: fill;"> 
+                    
                     <div class="card-body d-flex flex-column justify-content-between p-2" style="flex: 1;">
-                        <h6 class="card-title mb-1">${titleRomaji} ${titleEnglish ? `(<em>${titleEnglish}</em>)` : ""}</h6>
-                        <small class="text-muted">${role} in ${format}</small>
+                        <h6 class="card-title mb-1 p-0">${titleRomaji} ${titleEnglish ? `(<em>${titleEnglish}</em>)` : ""}</h6>
+                        <div class="mt-auto">
+                            <hr>
+                            <small class="text-muted d-block">${format}, ${seasonYear}</small>
+                            <small class="text-muted d-block">${role}</small> 
+                        </div>
                     </div>
+                </a>
                 `;
                 characterParticipationsContainer.appendChild(mediaItem);  
             })

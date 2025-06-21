@@ -531,7 +531,7 @@ def get_anilist_data(request):
                         romaji
                         english
                     }
-                    description
+                    description(asHtml: true)
                     episodes
                     volumes
                     genres
@@ -540,6 +540,7 @@ def get_anilist_data(request):
                     format
                     favourites
                     popularity
+                    siteUrl
                 }
             }'''
         elif query_type == "Character":
@@ -550,7 +551,11 @@ def get_anilist_data(request):
                         full
                         alternative
                     }
-                    description
+                    age
+                    gender
+                    description(asHtml: true)
+                    favourites
+                    siteUrl
                     media(perPage: 30, sort: POPULARITY_DESC) {
                         edges {
                             characterRole
@@ -560,7 +565,8 @@ def get_anilist_data(request):
                                     romaji
                                     english
                                 }
-                                type
+                                seasonYear
+                                siteUrl
                                 format
                                 coverImage {
                                     large

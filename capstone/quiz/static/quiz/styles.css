@@ -230,3 +230,23 @@
 .glow-wrong {
     box-shadow: 0 0 30px 2px var(--wrong);
 }
+
+
+/* ANILIST FETCHED DESCRIPTION --------------------------------------------------*/
+.markdown_spoiler {
+  background-color: black;
+  color: black;
+  cursor: pointer;
+  border-radius: 2px;
+  padding: 0 4px;
+  user-select: none;
+  transition: color 0.3s ease;
+  text-decoration: none;
+}
+
+.markdown_spoiler a {
+  color: black;
+  text-decoration: none;
+  user-select: none;
+  pointer-events: none;
+}
