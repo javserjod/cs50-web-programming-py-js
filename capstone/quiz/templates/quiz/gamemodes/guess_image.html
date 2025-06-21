@@ -118,10 +118,17 @@
                             Next
                         </button>
                     {% else %}
-                        <button class="btn btn-secondary d-flex gap-2 align-items-center" onclick=window.location.href="{% url 'game_round_details' game.id next_round_number %}" style="height: 38px; padding: 6px 12px;" title="Next Round">
-                            <i class="bi bi-caret-right"></i>
-                            Next
-                        </button>
+                        {% if next_round_number == game.current_round.number %}
+                            <button class="btn btn-warning d-flex gap-2 align-items-center" id="anti-spam-button" onclick=window.location.href="{% url 'game_round_details' game.id next_round_number %}" style="height: 38px; padding: 6px 12px;" title="Next Round">
+                                <i class="bi bi-caret-right"></i>
+                                Next
+                            </button>
+                        {% else %}   
+                            <button class="btn btn-secondary d-flex gap-2 align-items-center" onclick=window.location.href="{% url 'game_round_details' game.id next_round_number %}" style="height: 38px; padding: 6px 12px;" title="Next Round">
+                                <i class="bi bi-caret-right"></i>
+                                Next
+                            </button>
+                        {% endif %}
                     {% endif %}
                 {% endwith %}
 

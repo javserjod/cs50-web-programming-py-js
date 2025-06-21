@@ -210,10 +210,10 @@ def game_update(request, game_id):
                             print(f"Error fetching image: {e}")
 
                     if any([image_url is None, correct_answer is None, db_id is None]):
-                        game.delete()  # delete the game if no valid image found
+                        # game.delete()  # delete the game if no valid image found? better not... sometimes cancel is due to CORS
                         # no valid round found after maximum attempts
                         print("No valid image found after maximum attempts.")
-                        return render(request, "quiz/game_configuration.html", {"error_message": "No valid image found. Game cancelled and deleted. Please try again with less restrictive parameters."})
+                        return render(request, "quiz/game_configuration.html", {"error_message": "No valid image found. Game cancelled. Please try again with less restrictive parameters or just wait for the DB to answer."})
 
                     modified_image = image_random_modify(image_url)
 
@@ -325,48 +325,6 @@ def delete_game(request, game_id):
                 return JsonResponse({"html": None}, status=200)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
-
-
-def get_number_of_pages(source, random_genre, game):
-    # not used because always returns 100. Anilist API also say to not rely on this value...
-    """
-    Fetch the number of pages available for the given source, genre and elements per page.
-    Returns the number of pages, needed to adjust difficulty.
-    """
-    if game.mode == "Cover Image":
-
-        url = 'https://graphql.anilist.co'
-        query = '''
-        query ($page: Int, $perPage: Int, $type: MediaType, $genre: [String]) {
-            Page(page: $page, perPage: $perPage) {
-                pageInfo {
-                    lastPage
-                }
-                media(type: $type, genre_in: $genre) {
-                    id
-                }
-            }
-            
-        }
-        '''
-        variables = {
-            "page": 1,  # any page is fine
-            "perPage": N_FETCHED_ELEMENTS,
-            "type": source.upper(),
-            "genre": random_genre,
-        }
-        try:
-            response = requests.post(
-                url, json={"query": query, "variables": variables})
-            response.raise_for_status()  # Raise an error for bad responses
-            data = response.json()
-            print(f"Response data: {data}")
-            return data.get("data", {}).get("Page", {}).get(
-                "pageInfo", {}).get("lastPage", None)
-
-        except (KeyError, TypeError, requests.RequestException) as e:
-            print(f"Error fetching or parsing Anilist data: {e}")
-            return None
 
 
 def get_cover_image(source, genres, game, difficulty):
@@ -494,10 +452,6 @@ def get_character_image(source, genres, game, difficulty):
             # check image is not a placeholder image
             if img and (not is_placeholder_image(img)):
                 if name and (not game.used_id(id)):
-                    print(f"Selected character: {name} with ID: {id}")
-                    # favourites
-                    favourites = character.get("favourites", 0)
-                    print(f"Favourites: {favourites}")
                     return (img, name, id)
 
         raise ValueError("No valid character found after maximum attempts.")
@@ -590,6 +544,8 @@ def get_anilist_data(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+# other utility functions
+
 def is_placeholder_image(image_url, placeholder_mean_color=(39, 50, 78), tol=5):
     """
     Check if the image URL is a placeholder image.
@@ -619,13 +575,29 @@ def is_placeholder_image(image_url, placeholder_mean_color=(39, 50, 78), tol=5):
 def image_random_modify(image_url):
     """
     Randomly modify an image from a URL.
-    The modification can be either blurring or pixelating the image.
+    The modification can be either blurring, pixelating, inversion, noise+posterization and scrambling.
     Returns the modified image as a base64 string.
     """
-    return pixelate_image_from_url(image_url)
+    n = random.randint(1, 5)  # random number to choose the modification
+    match n:
+        case 1:
+            return blur_image_from_url(image_url)
+        case 2:
+            return pixelate_image_from_url(image_url)
+        case 3:
+            return invert_image_from_url(image_url)
+        case 4:
+            return noise_posterize_image_from_url(image_url)
+        case 5:
+            return scramble_image_from_url(image_url)
 
 
-def blur_image_from_url(image_url):
+def blur_image_from_url(image_url, kernel_size=(55, 55)):
+    """
+    Apply Gaussian blur to an image from a URL.
+    Kernel size is a tuple (width, height) that defines the size of the Gaussian kernel. Each value should be odd and positive. The bigger the kernel, the more blurred the image will be.
+    Returns the modified image as a base64 string.
+    """
     response = requests.get(image_url)
     if response.status_code != 200:
         return HttpResponse(status=404)
@@ -635,7 +607,7 @@ def blur_image_from_url(image_url):
 
     # apply Gaussian blur to the image
     # bigger kernel size means more blur
-    blurred = cv2.GaussianBlur(image, (51, 51), 0)
+    blurred = cv2.GaussianBlur(image, kernel_size, 0)
 
     success, buffer = cv2.imencode('.jpg', blurred)
     if not success:
@@ -646,7 +618,13 @@ def blur_image_from_url(image_url):
     return f"data:image/jpeg;base64,{img_base64}"
 
 
-def pixelate_image_from_url(image_url):
+def pixelate_image_from_url(image_url, kernel_size=(32, 32)):
+    """
+    Pixelate an image from a URL.
+    Kernel size is a tuple (width, height) that defines the size of the pixelation, which is later resized to the original image size.
+    Returns the modified image as a base64 string.
+    """
+
     response = requests.get(image_url)
     if response.status_code != 200:
         return HttpResponse(status=404)
@@ -655,8 +633,8 @@ def pixelate_image_from_url(image_url):
     image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
 
     height, width = image.shape[:2]
-    # desired "pixelated" size
-    w, h = (32, 32)
+    # desired "pixelated" size, the smaller the size, harder the game
+    w, h = kernel_size
 
     # resize image to "pixelated" size
     temp = cv2.resize(image, (w, h), interpolation=cv2.INTER_LINEAR)
@@ -671,6 +649,119 @@ def pixelate_image_from_url(image_url):
 
     # convert the image to base64
     img_base64 = base64.b64encode(buffer).decode('utf-8')
+    return f"data:image/jpeg;base64,{img_base64}"
+
+
+def invert_image_from_url(image_url):
+    response = requests.get(image_url)
+    if response.status_code != 200:
+        return HttpResponse(status=404)
+
+    image_data = np.frombuffer(response.content, np.uint8)
+    image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
+
+    inverted = cv2.bitwise_not(image)
+
+    success, buffer = cv2.imencode('.jpg', inverted)
+    if not success:
+        return None
+
+    # convert the image to base64
+    img_base64 = base64.b64encode(buffer).decode('utf-8')
+    return f"data:image/jpeg;base64,{img_base64}"
+
+
+def noise_posterize_image_from_url(image_url, noise_scale=100, n_colors=5):
+    """
+    Add noise and then posterize an image from a URL.
+    n_colors is the number of colors to reduce the image to.
+    Returns the modified image as a base64 string.
+    """
+    response = requests.get(image_url)
+    if response.status_code != 200:
+        return HttpResponse(status=404)
+
+    image_data = np.frombuffer(response.content, np.uint8)
+    image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
+
+    # Add Gaussian noise
+    noise = np.random.normal(
+        loc=0, scale=noise_scale, size=image.shape).astype(np.int16)
+    noisy_image = np.clip(image.astype(np.int16) +
+                          noise, 0, 255).astype(np.uint8)
+
+    # Convert to LAB color space
+    lab_image = cv2.cvtColor(noisy_image, cv2.COLOR_BGR2Lab)
+    Z = lab_image.reshape((-1, 3)).astype(np.float32)
+
+    # Apply k-means clustering
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    _, labels, centers = cv2.kmeans(
+        Z, n_colors, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+
+    # Convert back to original shape
+    centers = np.uint8(centers)
+    quantized = centers[labels.flatten()]
+    quantized_image = quantized.reshape(lab_image.shape)
+
+    # Convert back to BGR color space
+    posterized_image = cv2.cvtColor(quantized_image, cv2.COLOR_Lab2BGR)
+
+    success, buffer = cv2.imencode('.jpg', posterized_image)
+    if not success:
+        return None
+
+    # Convert the image to base64
+    img_base64 = base64.b64encode(buffer).decode('utf-8')
+    return f"data:image/jpeg;base64,{img_base64}"
+
+
+def scramble_image_from_url(image_url, block_size=60):
+    """
+    Scramble an image from a URL by shuffling its blocks.
+    block_size defines the size of the blocks to shuffle. The bigger the block size, the easier the game.
+    Returns the modified image as a base64 string.
+    """
+    response = requests.get(image_url)
+    if response.status_code != 200:
+        return HttpResponse(status=404)
+
+    image_data = np.frombuffer(response.content, np.uint8)
+    image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
+
+    original_height, original_width = image.shape[:2]
+
+    # Ensure dimensions are divisible by block_size
+    resize_height = original_height - (original_height % block_size)
+    resize_width = original_width - (original_width % block_size)
+    resized_image = cv2.resize(image, (resize_width, resize_height))
+
+    # Divide the image into blocks
+    blocks = []
+    for y in range(0, resize_height, block_size):
+        for x in range(0, resize_width, block_size):
+            block = resized_image[y:y+block_size, x:x+block_size]
+            blocks.append(block)
+
+    # Shuffle blocks
+    np.random.shuffle(blocks)
+
+    # Reconstruct the image from shuffled blocks
+    scrambled = np.zeros_like(resized_image)
+    idx = 0
+    for y in range(0, resize_height, block_size):
+        for x in range(0, resize_width, block_size):
+            scrambled[y:y+block_size, x:x+block_size] = blocks[idx]
+            idx += 1
+
+    scrambled_resized = cv2.resize(
+        scrambled, (original_width, original_height), interpolation=cv2.INTER_LINEAR)
+
+    success, buffer = cv2.imencode('.jpg', scrambled_resized)
+    if not success:
+        return None
+
+    img_base64 = base64.b64encode(buffer).decode("utf-8")
     return f"data:image/jpeg;base64,{img_base64}"
 
 

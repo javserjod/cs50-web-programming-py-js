@@ -112,7 +112,7 @@
 }
 
 .blinker {
-  animation: blinker 1.5s linear infinite;
+  animation: blinker 1.25s linear infinite;
 }
 
 @keyframes blinker {

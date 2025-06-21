@@ -244,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 mediaItem.style.maxWidth = "200px";
                 mediaItem.innerHTML = `
                 <a href="${siteUrl}" target="_blank" class="stretched-link text-decoration-none text-dark d-flex flex-column h-100">
-                    <img src="${cover}" alt="${titleRomaji}" class="card-img-top mx-auto mb-1 d-block" style="width: 100%; height: 250px; object-fit: fill;"> 
+                    <img src="${cover}" alt="${titleRomaji}" class="card-img-top mx-auto mb-1 d-block" style="width: 100%; height: 300px; object-fit: fill;"> 
                     
                     <div class="card-body d-flex flex-column justify-content-between p-2" style="flex: 1;">
                         <h6 class="card-title mb-1 p-0">${titleRomaji} ${titleEnglish ? `(<em>${titleEnglish}</em>)` : ""}</h6>
