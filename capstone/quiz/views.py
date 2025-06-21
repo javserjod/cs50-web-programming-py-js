@@ -23,9 +23,6 @@ import json
 # Number of games to display per page in user's profile
 GAMES_PER_PAGE = 12
 
-# Number of media items to fetch from Anilist perPage. Maximum is 50. Try to reduce due to the CORS error when fetching images.
-N_FETCHED_ELEMENTS = 10
-
 # Maximum attempts to fetch a valid page
 MAX_ATTEMPTS_PAGES = 5
 
@@ -35,11 +32,15 @@ MAX_ATTEMPTS_FROM_PAGE = 5
 # Cooldown time in seconds for fetching a new image or character
 FETCH_COOLDOWN_SECONDS = 5
 
-# Value to adjust the position of the pages that may be fetched from Anilist. The bigger, later pages (less popular) will have more probability to be fetched. Less than 7 for securing a page with enough results.
-DIFFICULTY_RATIO = 3
+# -------- DIFFICULTY VARIABLES --------
+# Number of media items to fetch from Anilist perPage. Maximum is 50. Try to reduce due to the CORS error when fetching images. Also the number of characters perPage from a media.
+N_FETCHED_ELEMENTS = 5
 
-# Value to adjust the possible characters prone to be selected, after ordering by favourites inside of the media. This value multiplies the difficulty level to get a maximum index to slice the media list, creating a range of possible characters to be selected. The bigger, the more characters will be available to be selected. Less than 5 for securing a character with enough results.
-DIFFICULTY_RATIO_CHARACTERS = 2
+# Value to adjust the position of the pages that may be fetched from Anilist. The bigger, later pages (less popular) will have more probability to be fetched. Less than 7 for securing a page with enough results. Adjust looking at N_FETCHED_ELEMENTS.
+DIFFICULTY_RATIO_MEDIA = 3
+
+# Value to adjust the possible characters prone to be selected, after ordering by favourites inside of the media. This value multiplies the difficulty level to get a maximum index to slice the media list, creating a range of possible characters to be selected. The bigger, the more characters will be available to be selected. Less than 5 for securing a character with enough results. Adjust looking at N_FETCHED_ELEMENTS.
+DIFFICULTY_RATIO_CHARACTERS = 0.5
 
 
 def home(request):
@@ -334,7 +335,8 @@ def get_cover_image(source, genres, game, difficulty):
     """
     genres_list = genres_to_list(genres)
     random_genre = random.choice(genres_list)
-    random_page = random.randint(1, difficulty * DIFFICULTY_RATIO)
+    random_page = random.randint(1, np.ceil(
+        difficulty * DIFFICULTY_RATIO_MEDIA))
 
     url = 'https://graphql.anilist.co'
     query = '''
@@ -379,6 +381,8 @@ def get_cover_image(source, genres, game, difficulty):
             title = random_media.get("title", {}).get("romaji")
             id = random_media.get("id")
             if img and title and (not game.used_id(id)):
+                print(
+                    f"\nCover image selected from {title}, located in the page {random_page} ({N_FETCHED_ELEMENTS} elem./page, so position close to {random_page*N_FETCHED_ELEMENTS}) of the popularity rank.\n")
                 return (img, title, id)
 
         raise ValueError("No valid media found after maximum attempts.")
@@ -395,15 +399,21 @@ def get_character_image(source, genres, game, difficulty):
     """
     genres_list = genres_to_list(genres)
     random_genre = random.choice(genres_list)
-    random_page = random.randint(1, difficulty * DIFFICULTY_RATIO)
+    random_page = random.randint(1, np.ceil(
+        difficulty * DIFFICULTY_RATIO_MEDIA))
+    random_page_char = random.randint(
+        1, np.ceil(difficulty * DIFFICULTY_RATIO_CHARACTERS))
 
     url = "https://graphql.anilist.co"
     query = '''
-    query ($page: Int, $type: MediaType, $genre: [String], $perPage: Int) {
+    query ($page: Int, $pageChar: Int, $type: MediaType, $genre: [String], $perPage: Int) {
         Page(page: $page, perPage: $perPage) {
             media(type: $type, genre_in: $genre, sort: POPULARITY_DESC) {
                 favourites
-                characters(sort: FAVOURITES_DESC) {
+                title {
+                    romaji
+                }
+                characters(page: $pageChar, perPage: $perPage, sort: FAVOURITES_DESC) {
                     nodes {
                         id
                         name {
@@ -421,6 +431,7 @@ def get_character_image(source, genres, game, difficulty):
     '''
     variables = {
         "page": random_page,
+        "pageChar": random_page_char,
         "perPage": N_FETCHED_ELEMENTS,
         "type": source.upper(),  # "ANIME" or "MANGA"
         "genre": random_genre,
@@ -443,15 +454,19 @@ def get_character_image(source, genres, game, difficulty):
             characters = media.get("characters", {}).get("nodes", [])
             if not characters:
                 continue
-            # get a random character from the media and its info. slice characters according to difficulty and character ratio, then select random element (character)
-            character = random.choice(
-                characters[: difficulty * DIFFICULTY_RATIO_CHARACTERS])
+
+            print(f"Fetched {len(characters)} characters from media.")
+            # choose 1 character from the N_FETCHED_ELEMENTS
+            character = random.choice(characters)
+
             img = character.get("image", {}).get("large")
             name = character.get("name", {}).get("full")
             id = character.get("id")
             # check image is not a placeholder image
             if img and (not is_placeholder_image(img)):
                 if name and (not game.used_id(id)):
+                    print(
+                        f"\nSelected from {media.get('title', {}).get('romaji')} the character in the page {random_page_char} ({N_FETCHED_ELEMENTS} elem./page, so position close to {random_page_char*N_FETCHED_ELEMENTS}) of the popularity rank, with {character.get('favourites')} favourites.\n")
                     return (img, name, id)
 
         raise ValueError("No valid character found after maximum attempts.")
