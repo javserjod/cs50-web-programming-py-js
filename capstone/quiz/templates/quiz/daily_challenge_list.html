@@ -2,11 +2,11 @@
 
 {% block body %}
 
-    <div class="container mt-5 profile-container d-flex flex-column align-items-center">
+    <div class="container mt-5 d-flex flex-column align-items-center">
             
-        <h1 class="text-center mb-4">Previous Daily Challenges</h1>
-        <p class="text-center mb-4">
-            You only have one chance to play each daily challenge. Play wisely!
+        <h1 class="text-center mb-3">Previous Daily Challenges</h1>
+        <p class="text-center mb-4 lead">
+            You only have one chance to play each daily challenge. Think wisely!
         </p>
         
         {% if page_obj.paginator.count == 0 or user.games.count == 0 %}

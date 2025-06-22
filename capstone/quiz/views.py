@@ -118,7 +118,8 @@ def profile(request, username):
     if request.method == "GET":
 
         user = get_object_or_404(User, username=username)
-        all_games = Game.objects.filter(user=user).order_by('-date_played')
+        all_games = Game.objects.filter(
+            user=user, daily_challenge=False).order_by('-date_played')
 
         paginator = Paginator(all_games, GAMES_PER_PAGE)
         page_number = request.GET.get("page")

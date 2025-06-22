@@ -3,17 +3,17 @@
 {% block body %}
 
 <div class="container mt-5">
-    <h2 class="text-center mb-3">Home</h2>
+    <h1 class="text-center mb-3">Home</h1>
 
     <div class="d-flex flex-column align-items-center justify-content-center gap-3">
         {% if user.is_authenticated %}
-            <span class="content text-center">Welcome to aniGeemu, <strong>{{ user.username }}</strong></span>
-            <span class="content text-center mb-5">Prove your knowledge about anime and manga through fun image guessing games!</span>
+            <span class="content text-center lead">Welcome to aniGeemu, {{ user.username }}!</span>
+            <span class="content text-center mb-5 lead">Prove your knowledge about anime and manga through fun image guessing games!</span>
 
-            <span class="content text-center">You can start playing by configuring your <strong>own game settings</strong>:</span>
+            <span class="content text-center lead">You can start playing by configuring your <strong>own game settings</strong>:</span>
             <a class="btn btn-primary mt-2 mb-5 p-2 w-75" href="{% url 'game_configuration' %}" style="font-size:20px; max-width: var(--max-width);">Game Configuration</a>
 
-            <span class="content text-center">Or you can try the <strong>daily challenges</strong>:</span>
+            <span class="content text-center lead">Or you can try the <strong>daily challenges</strong>:</span>
             <a class="btn btn-warning mt-2 mb-5 p-2 w-75" href="{% url 'daily_challenge_list' %}" style="font-size:20px; max-width: var(--max-width);">Daily Challenges</a>
 
         {% else %}
