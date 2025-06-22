@@ -15,7 +15,7 @@ class Game(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='games')
     score = models.IntegerField(default=0)
-    date_played = models.DateTimeField(auto_now_add=True)
+    date_played = models.DateField(auto_now_add=True)
 
     source = models.CharField(max_length=50)
     mode = models.CharField(max_length=50)
@@ -23,8 +23,18 @@ class Game(models.Model):
     n_questions = models.IntegerField(default=10)
     difficulty = models.IntegerField(default=1)  # From 1 to 5
 
+    # Used for daily challenges
+    daily_challenge = models.BooleanField(default=False)
+    daily_challenge_number = models.IntegerField(
+        blank=True, null=True)
+    daily_challenge_date = models.DateField(
+        blank=True, null=True)
+
     def __str__(self):
-        return f"Game #{self.id}, from {self.user.username}"
+        if self.daily_challenge:
+            return f"Daily Game #{self.daily_challenge_number} from {self.user.username}"
+        else:
+            return f"Game #{self.id} from {self.user.username}"
 
     def current_round(self):
         return self.rounds.filter(state=Round.PENDING).first()

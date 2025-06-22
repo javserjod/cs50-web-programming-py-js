@@ -3,7 +3,11 @@
 {% block body %}
 
 <div class="container mt-5 w-100">
-            
+    {% if game.daily_challenge %}
+        <h1 class="text-center mb-4">Daily Challenge #{{ game.daily_challenge_number }}</h1>
+    {% endif %}
+        
+        
     <div class="scoreboard mb-4">
         {% for round in rounds %}
             {% if round.number is game.current_round.number %}

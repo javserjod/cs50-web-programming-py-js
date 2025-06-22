@@ -17,8 +17,6 @@ urlpatterns = [
     path("get_anilist_data/", views.get_anilist_data, name='get_anilist_data'),
     path("daily_challenge",
          views.daily_challenge_list, name="daily_challenge_list"),
-    path("daily_challenge/<int:daily_game_number>",
-         views.daily_challenge, name="daily_challenge"),
 
 
 ]

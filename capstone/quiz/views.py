@@ -14,7 +14,7 @@ import cv2
 import base64
 from django.core.paginator import Paginator
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, date
 from django.template.loader import render_to_string
 from PIL import Image
 from io import BytesIO
@@ -41,6 +41,16 @@ DIFFICULTY_RATIO_MEDIA = 3
 
 # Value to adjust the possible characters prone to be selected, after ordering by favourites inside of the media. This value multiplies the difficulty level to get a maximum index to slice the media list, creating a range of possible characters to be selected. The bigger, the more characters will be available to be selected. Less than 5 for securing a character with enough results. Adjust looking at N_FETCHED_ELEMENTS.
 DIFFICULTY_RATIO_CHARACTERS = 0.5
+
+# --------- DAILY CHALLENGE VARIABLES ---------
+ANILIST_GENRES = ['Action,Adventure,Comedy,Drama,Ecchi,Fantasy,Horror,Mahou Shoujo,Mecha,Music,Mystery,Psychological,Romance,Sci-Fi,Slice of Life,Sports,Supernatural,Thriller']
+
+N_QUESTIONS_DAILY_CHALLENGE = 10
+
+POSSIBLE_DIFFICULTIES_DAILY_CHALLENGE = [1, 2, 3, 4, 5]
+
+# The first date for the daily challenge. Y, M, D format.
+FIRST_DATE_DAILY_CHALLENGE = date(2025, 6, 20)
 
 
 def home(request):
@@ -162,6 +172,15 @@ def game_update(request, game_id):
         genres = game.genres
         difficulty = game.difficulty
         current_round = game.current_round()
+
+        if game.daily_challenge:
+            # if the game is a daily challenge, set the seed for reproducibility, just in case
+            set_seed_for_daily_challenge(game.date_played)
+        else:
+            # if the game is not a daily challenge, set random seed for unpredictability
+            random.seed()  # set a random seed for unpredictability
+
+        print(f"source: {source}, genres: {genres}, difficulty: {difficulty}")
 
         if game.mode in ["Cover Image", "Character Image"]:
 
@@ -366,7 +385,7 @@ def get_cover_image(source, genres, game, difficulty):
             url, json={"query": query, "variables": variables})
         response.raise_for_status()  # Raise an error for bad responses
         data = response.json()
-
+        print(f"Response from Anilist: {data}")
         media_list = data.get("data", {}).get("Page", {}).get("media", None)
 
         if not media_list:
@@ -560,21 +579,82 @@ def get_anilist_data(request):
 
 
 def daily_challenge_list(request):
-    """
-    Render the daily challenge list page.
-    This page will show the daily challenges available for the user.
-    """
-    if request.method == "GET":
-        # Fetch daily challenges from the database or any other source
-        # For now, just render an empty page
-        return render(request, "quiz/daily_challenge_list.html")
-    else:
-        return HttpResponse(status=405)  # Method not allowed
+    # for day since FIRST_DATE_DAILY_CHALLENGE, generate a daily challenge for each day if there is not one already
+    for n in range((date.today() - FIRST_DATE_DAILY_CHALLENGE).days + 1):
+        day = FIRST_DATE_DAILY_CHALLENGE + timedelta(days=n)
+        create_daily_challenge(request, day, n+1)
+
+    daily_challenges = Game.objects.filter(
+        user=request.user, daily_challenge=True).order_by('-daily_challenge_date')
+
+    paginator = Paginator(daily_challenges, GAMES_PER_PAGE)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "quiz/daily_challenge_list.html", {
+        "user": request.user,
+        "page_obj": page_obj,
+    })
 
 
-def daily_challenge(request, daily_game_number):
-    if request.method == "GET":
-        return HttpResponse(200)
+def set_seed_for_daily_challenge(date):
+    """
+    Set a seed for the daily challenge based on the date.
+    This function is used to ensure that the daily challenge is reproducible.
+    """
+    seed_value = int(date.strftime("%Y%m%d"))
+    random.seed(seed_value)  # set seed for reproducibility
+    print(f"Seed set for daily challenge on {date}: {seed_value}")
+
+
+def create_daily_challenge(request, date, number):
+    """
+    Generate a new daily challenge for date.
+    This function should create a new DailyChallenge instance with the current date and a seed based on the date.
+    """
+    try:
+        if not Game.objects.filter(
+            user=request.user,
+            daily_challenge_date=date,
+            daily_challenge=True
+        ).exists():
+            # then create it for that date and assign it to the user
+            print(f"\nCreating daily challenge for {date}...")
+
+            set_seed_for_daily_challenge(date)
+
+            game = Game.objects.create(
+                daily_challenge=True,
+                daily_challenge_date=date,
+                daily_challenge_number=number,
+
+                user=request.user,
+                source=random.choice(["ANIME", "MANGA"]),
+                mode=random.choice(["Character Image", "Cover Image"]),
+                genres=ANILIST_GENRES,
+                n_questions=N_QUESTIONS_DAILY_CHALLENGE,
+                difficulty=random.choice(
+                    POSSIBLE_DIFFICULTIES_DAILY_CHALLENGE),
+            )
+
+            for i in range(1, game.n_questions + 1):   # 1-based index
+                # create a round for each question
+                game.rounds.create(
+                    number=i,
+                    state="PENDING"
+                )
+
+            game.save()
+            print(f"Daily challenge created for {date}.\n")
+
+        else:   # game daily challenge for certain date already exists for that user
+            print(f"Daily challenge for {date} already exists.\n")
+
+    except Exception as e:
+        print(f"Error creating or searching daily challenge for {date}: {e}")
+        return render(request, "quiz/daily_challenge_list.html", {
+            "message": "Error creating or searching daily challenge. Please try again."
+        })
 
 
 # other utility functions
