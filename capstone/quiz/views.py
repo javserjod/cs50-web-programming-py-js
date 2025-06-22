@@ -26,14 +26,14 @@ GAMES_PER_PAGE = 12
 MAX_ATTEMPTS_PAGES = 5
 
 # Maximum attempts to fetch a valid image or character according to the parameters given by the user FROM A CHOOSEN PAGE
-MAX_ATTEMPTS_FROM_PAGE = 5
+MAX_ATTEMPTS_FROM_PAGE = 10
 
 # Cooldown time in seconds for fetching a new image or character
 FETCH_COOLDOWN_SECONDS = 5
 
 # -------- DIFFICULTY VARIABLES --------
 # Number of media items to fetch from Anilist perPage. Maximum is 50. Try to reduce due to the CORS error when fetching images. Also the number of characters perPage from a media. The bigger, the more difficult the game will be, as more media and characters will be available to be selected.
-N_FETCHED_ELEMENTS = 5
+N_FETCHED_ELEMENTS = 7
 
 # Value to adjust the position of the pages that may be fetched from Anilist. The bigger, later pages (less popular) will have more probability to be fetched. Less than 7 for securing a page with enough results. Adjust looking at N_FETCHED_ELEMENTS.
 DIFFICULTY_RATIO_MEDIA = 3
@@ -175,12 +175,13 @@ def game_update(request, game_id):
 
         if game.daily_challenge:
             # if the game is a daily challenge, set the seed for reproducibility, just in case
-            set_seed_for_daily_challenge(game.date_played)
+            set_seed_for_daily_challenge(
+                game.daily_challenge_date, game.current_round().number)
         else:
             # if the game is not a daily challenge, set random seed for unpredictability
             random.seed()  # set a random seed for unpredictability
 
-        print(f"source: {source}, genres: {genres}, difficulty: {difficulty}")
+        # print(f"source: {source}, genres: {genres}, difficulty: {difficulty}")
 
         if game.mode in ["Cover Image", "Character Image"]:
 
@@ -207,32 +208,32 @@ def game_update(request, game_id):
                     })
                 else:
                     image_url, correct_answer, db_id = None, None, None
-                    for _ in range(MAX_ATTEMPTS_PAGES):
+                    for i in range(MAX_ATTEMPTS_PAGES):
                         # sometimes errors occur when fetching images from Anilist (unknown cause)
                         try:
                             if game.mode == "Cover Image":
                                 print("Fetching cover image...")
                                 result = get_cover_image(
-                                    source, genres, game, difficulty)
+                                    source, genres, game, max(1, difficulty-i))
                             elif game.mode == "Character Image":
                                 print("Fetching character image...")
                                 result = get_character_image(
-                                    source, genres, game, difficulty)
+                                    source, genres, game, max(1, difficulty-i))
 
                             if result is None:
                                 raise ValueError(
-                                    "No valid cover image found.")
+                                    f"No valid round found. Reducing difficulty from {difficulty} to {max(1, difficulty-i-1)} and trying again, just for this round.\n")
                             else:
                                 image_url, correct_answer, db_id = result
                                 break
 
                         except ValueError as e:
-                            print(f"Error fetching image: {e}")
+                            print(f"{e}")
 
                     if any([image_url is None, correct_answer is None, db_id is None]):
                         # game.delete()  # delete the game if no valid image found? better not... sometimes cancel is due to CORS
                         # no valid round found after maximum attempts
-                        print("No valid image found after maximum attempts.")
+                        print("No valid found after maximum attempts.")
                         return render(request, "quiz/game_configuration.html", {"error_message": "No valid image found. Game cancelled. Please try again with less restrictive parameters or just wait for the DB to answer."})
 
                     modified_image = image_random_modify(image_url)
@@ -385,7 +386,7 @@ def get_cover_image(source, genres, game, difficulty):
             url, json={"query": query, "variables": variables})
         response.raise_for_status()  # Raise an error for bad responses
         data = response.json()
-        print(f"Response from Anilist: {data}")
+
         media_list = data.get("data", {}).get("Page", {}).get("media", None)
 
         if not media_list:
@@ -395,7 +396,7 @@ def get_cover_image(source, genres, game, difficulty):
         for _ in range(MAX_ATTEMPTS_FROM_PAGE):
             random_media = random.choice(
                 media_list)   # Get a random media item
-            # random media ordered by popularity. Difficulty could be leveraged with this.
+
             img = random_media.get("coverImage", {}).get("large")
             title = random_media.get("title", {}).get("romaji")
             id = random_media.get("id")
@@ -414,6 +415,7 @@ def get_cover_image(source, genres, game, difficulty):
 def get_character_image(source, genres, game, difficulty):
     """
     Fetch a random character image from a random media from Anilist based on the source, random genre from the selected and chosen difficulty.
+    When using seed, the same character will be selected for the same game configuration, so the game is reproducible.
     Returns the image URL of a character from a random media item, the character's name (correct answer), its ID in AniList for future use and other additional info.
     """
     genres_list = genres_to_list(genres)
@@ -481,12 +483,16 @@ def get_character_image(source, genres, game, difficulty):
             img = character.get("image", {}).get("large")
             name = character.get("name", {}).get("full")
             id = character.get("id")
-            # check image is not a placeholder image
-            if img and (not is_placeholder_image(img)):
-                if name and (not game.used_id(id)):
+
+            # if character not used in the game before
+            if name and (not game.used_id(id)):
+                # if image is not a placeholder image
+                if img and (not is_placeholder_image(img)):
                     print(
                         f"\nSelected from {media.get('title', {}).get('romaji')} the character in the page {random_page_char} ({N_FETCHED_ELEMENTS} elem./page, so position close to {random_page_char*N_FETCHED_ELEMENTS}) of the popularity rank, with {character.get('favourites')} favourites.\n")
                     return (img, name, id)
+            else:
+                print(f"Character already used this game: {name}")
 
         raise ValueError("No valid character found after maximum attempts.")
 
@@ -597,14 +603,17 @@ def daily_challenge_list(request):
     })
 
 
-def set_seed_for_daily_challenge(date):
+def set_seed_for_daily_challenge(date, round_number=1):
     """
     Set a seed for the daily challenge based on the date.
+    Add also a variation for round numebr, because otherwise the same seed will be used for all rounds of the same daily challenge: the same page, same image, same character, etc (although it was controlled by try except and attempts, avoiding exact same characters/covers)
     This function is used to ensure that the daily challenge is reproducible.
     """
-    seed_value = int(date.strftime("%Y%m%d"))
-    random.seed(seed_value)  # set seed for reproducibility
-    print(f"Seed set for daily challenge on {date}: {seed_value}")
+    seed_date = int(date.strftime("%Y%m%d"))
+    seed_value = f"{seed_date}_{round_number}"
+    random.seed(seed_value)
+    print(
+        f"Seed set for daily challenge on {date}, round {round_number}: {seed_value}")
 
 
 def create_daily_challenge(request, date, number):
