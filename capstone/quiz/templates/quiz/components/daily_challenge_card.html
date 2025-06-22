@@ -22,6 +22,7 @@
                 <p class="card-text">Mode: {{ game.mode }}</p>
                 <p class="card-text">Difficulty: {{ game.difficulty }}</p>
                 <!--<p class="card-text">Created on: {{ game.date_played|date:"Y-m-d" }}</p>-->
+                <p class="card-text">Source: {{ game.source }}</p>
                 <hr>
                 {% if game.is_finished %}
                     <p class="card-text"><strong>Finished</strong>: {{ game.n_questions }}/{{ game.n_questions }}</p>

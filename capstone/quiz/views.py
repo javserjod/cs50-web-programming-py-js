@@ -8,7 +8,6 @@ from django.contrib.auth.decorators import login_required
 from quiz.models import User, Game, Round
 import requests
 import random
-import re
 import numpy as np
 import cv2
 import base64
@@ -33,7 +32,7 @@ MAX_ATTEMPTS_FROM_PAGE = 5
 FETCH_COOLDOWN_SECONDS = 5
 
 # -------- DIFFICULTY VARIABLES --------
-# Number of media items to fetch from Anilist perPage. Maximum is 50. Try to reduce due to the CORS error when fetching images. Also the number of characters perPage from a media.
+# Number of media items to fetch from Anilist perPage. Maximum is 50. Try to reduce due to the CORS error when fetching images. Also the number of characters perPage from a media. The bigger, the more difficult the game will be, as more media and characters will be available to be selected.
 N_FETCHED_ELEMENTS = 5
 
 # Value to adjust the position of the pages that may be fetched from Anilist. The bigger, later pages (less popular) will have more probability to be fetched. Less than 7 for securing a page with enough results. Adjust looking at N_FETCHED_ELEMENTS.
@@ -45,12 +44,12 @@ DIFFICULTY_RATIO_CHARACTERS = 0.5
 # --------- DAILY CHALLENGE VARIABLES ---------
 ANILIST_GENRES = ['Action,Adventure,Comedy,Drama,Ecchi,Fantasy,Horror,Mahou Shoujo,Mecha,Music,Mystery,Psychological,Romance,Sci-Fi,Slice of Life,Sports,Supernatural,Thriller']
 
-N_QUESTIONS_DAILY_CHALLENGE = 10
+N_QUESTIONS_DAILY_CHALLENGE = 20
 
-POSSIBLE_DIFFICULTIES_DAILY_CHALLENGE = [1, 2, 3, 4, 5]
+POSSIBLE_DIFFICULTIES_DAILY_CHALLENGE = [1, 2, 3, 4, 5, 6]
 
 # The first date for the daily challenge. Y, M, D format.
-FIRST_DATE_DAILY_CHALLENGE = date(2025, 6, 20)
+FIRST_DATE_DAILY_CHALLENGE = date(2025, 6, 1)
 
 
 def home(request):
