@@ -326,7 +326,7 @@ def delete_game(request, game_id):
         try:
             current_page = int(request.GET.get("page", 1))  # parameter in URL
             next_page_first_index = current_page * GAMES_PER_PAGE
-            next_game_qs = Game.objects.filter(user=request.user).order_by(
+            next_game_qs = Game.objects.filter(user=request.user, daily_challenge=False).order_by(
                 '-date_played')[next_page_first_index:next_page_first_index+1]   # not just index, but a slice, so in case there are no more games we don't get an IndexError
             next_game = next_game_qs[0] if next_game_qs else None
 
