@@ -190,3 +190,5 @@ JS files were added inside the static\quiz folder.
 As every other previous project seen throughout the course, this apps runs with the command:
 
             python manage.py runserver
+
+Then simply click on the URL on console.
