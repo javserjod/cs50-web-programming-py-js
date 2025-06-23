@@ -5,7 +5,6 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
-    profile_picture_url = models.URLField(max_length=200, blank=True)
 
     def __str__(self):
         return self.username
@@ -47,7 +46,7 @@ class Game(models.Model):
         correct_rounds = rounds.filter(state=Round.CORRECT).count()
         wrong_rounds = rounds.filter(state=Round.WRONG).count()
         if correct_rounds + wrong_rounds == 0:
-            return "No rounds played"
+            return ""
         return correct_rounds / (correct_rounds + wrong_rounds) * 100
 
     def used_id(self, id):

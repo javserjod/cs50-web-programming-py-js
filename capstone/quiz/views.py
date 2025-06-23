@@ -70,15 +70,12 @@ def register(request):
             return render(request, "quiz/register.html", {
                 "message": "Passwords must match."
             })
-        image_url = request.POST.get("image_url")
-        if not image_url:
-            image_url = "https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small_2x/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg"
+
         try:
             user = User.objects.create_user(
                 username=username,
                 password=password,
                 email=email,
-                profile_picture_url=image_url
             )
             user.save()
         except IntegrityError:

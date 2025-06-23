@@ -95,7 +95,7 @@
     background-color: var(--selected-card-fill);
 }
 
-
+/* guess_image.html STYLES ---------------------------------------------------*/
 .scoreboard {
     display: flex;
     justify-content: center;
