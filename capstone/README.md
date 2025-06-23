@@ -46,6 +46,8 @@ The html files are located in the templates\quiz folder, which is composed of:
 
     - Apart from that, includes the Navbar. When user is logged-in, it is made up of the project name on the left and all the links to the pages of the app: Home, Game Configuration, Daily Challenge, Profile and Logout. If user is not logged-in, only contains the project name, and links to login and register views. When the app is running on a smaller device, all those links are compressed inside a button, which when clicked, shows all the pertinent links in a column format.
 
+    - There is also a footer indicating the origin of the data, which is AniList.
+
 - login.html : standard login page. User must write down an username and a password already inserted in the database and click on the Login button. A link to the register page is also added.
 
 - profile.html : the page where all the private games with custom settings created by an user are gathered. They are arranged from newest to oldest. Like the Daily Challenges page, also uses a Paginator.
