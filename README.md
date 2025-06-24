@@ -114,3 +114,33 @@ Demonstration: https://youtu.be/_Mc3rbbnGbI
 ![Captura de pantalla 2025-06-03 224647](https://github.com/user-attachments/assets/b569d689-b6e9-4d17-9ac2-2814d1a5b2f3)
 
 </details>
+
+
+
+## Final Project (capstone) -> aniGeemu
+For this final project, I had total freedom of designing and programming, as long as the result wasn't extremely similar to one of the previous projects. I finally opted for a totally responsive web page that combined what I learnt throughout the course with one of my hobbies, the world of animanga, to yield a fun, automatized game, free for everyone and easy to learn. It consists of a guessing game, where the user is shown a character or official art image behind a visual effect that hinders the task of submitting the correct name or title, respectively. After each round that composes a game is solved, whether the guess is correct or wrong, related information is printed under the solution, something that could discover the user new recommendations or just remember some facts about an already watched product. There are currently two main modes available: custom game, where each user creates a game with own settings (manga or anime, character or media, genres, number of questions and difficulty), and daily challenges, where each day the same totally random game is added to all the users, so they can compete in equality and later on compare their results to show off about their animanga knowledge with friends!
+
+Demonstration: [https://youtu.be/_Mc3rbbnGbI](https://youtu.be/pK1s9utvF14)
+
+<details close>
+<summary>See screenshots</summary>
+<br>
+
+![image](https://github.com/user-attachments/assets/364ff4f8-cee4-4b96-a977-626b36a1cccc)
+
+![image](https://github.com/user-attachments/assets/ab93bf0b-c9af-4b32-9873-7c1c010ec840)
+
+![image](https://github.com/user-attachments/assets/a0992def-1506-46ff-bbd7-a293336879b5)
+
+![image](https://github.com/user-attachments/assets/fba1397b-441e-440f-9e47-2da116f4e1c2)
+
+![image](https://github.com/user-attachments/assets/fa0f224a-e9ce-480f-a303-022eb28bda90)
+
+![image](https://github.com/user-attachments/assets/eadf6ed3-2d44-49ac-b565-85e0f4fc4b0d)
+
+![image](https://github.com/user-attachments/assets/588691b2-d9a5-42af-9572-657084966b73)
+
+![image](https://github.com/user-attachments/assets/5b363897-d6d0-47c3-960f-fe3e158b2825)
+
+
+</details>
